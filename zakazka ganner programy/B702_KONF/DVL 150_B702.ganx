@@ -1,0 +1,762 @@
+<?xml version="1.0" standalone="yes"?>
+<Programm xmlns="http://tempuri.org/Programm.xsd">
+  <xs:schema id="Programm" targetNamespace="http://tempuri.org/Programm.xsd" xmlns:mstns="http://tempuri.org/Programm.xsd" xmlns="http://tempuri.org/Programm.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+    <xs:element name="Programm" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msdata:Dirty="False">
+      <xs:complexType>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+          <xs:element name="PrgrSet">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="PrgrName" type="xs:string" minOccurs="0" />
+                <xs:element name="Description" type="xs:string" minOccurs="0" />
+                <xs:element name="wsX" type="xs:double" minOccurs="0" />
+                <xs:element name="wsY" type="xs:double" minOccurs="0" />
+                <xs:element name="wsZ" type="xs:double" minOccurs="0" />
+                <xs:element name="DoMF" type="xs:string" minOccurs="0" />
+                <xs:element name="MFPos" type="xs:double" minOccurs="0" />
+                <xs:element name="MFTool" type="xs:string" minOccurs="0" />
+              </xs:sequence>
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="ParameterListe">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="ParamName" msdata:Caption="DataColumn1" type="xs:string" />
+                <xs:element name="Value" msdata:Caption="DataColumn1" type="xs:string" minOccurs="0" />
+                <xs:element name="Description" type="xs:string" minOccurs="0" />
+                <xs:element name="ParamValue" type="xs:string" minOccurs="0" />
+                <xs:element name="SortID" type="xs:int" minOccurs="0" />
+              </xs:sequence>
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="Root">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="Extension" type="xs:string" minOccurs="0" />
+                <xs:element name="Version" type="xs:string" minOccurs="0" />
+                <xs:element name="CreationDate" type="xs:dateTime" minOccurs="0" />
+                <xs:element name="CreationApp" type="xs:string" default="" minOccurs="0" />
+                <xs:element name="ModificationApp" type="xs:string" default="" minOccurs="0" />
+              </xs:sequence>
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="PrgrWork">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="ProgrammID" type="xs:string" minOccurs="0" />
+                <xs:element name="CycleID" type="xs:string" minOccurs="0" />
+                <xs:element name="IsActivated" type="xs:string" minOccurs="0" />
+                <xs:element name="Var" type="xs:string" minOccurs="0" />
+                <xs:element name="Machine" type="xs:string" minOccurs="0" />
+                <xs:element name="DoDelete" type="xs:boolean" minOccurs="0" />
+                <xs:element name="Clause" type="xs:string" minOccurs="0" />
+                <xs:element name="iClauseState" type="xs:int" default="0" minOccurs="0" />
+              </xs:sequence>
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="PrgrFileWork">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="DELMARK" type="xs:string" minOccurs="0" />
+                <xs:element name="CntID" msdata:AutoIncrement="true" msdata:AutoIncrementSeed="1" type="xs:int" />
+                <xs:element name="Plane" msdata:Caption="DataColumn1" type="xs:string" minOccurs="0" />
+                <xs:element name="Ref" type="xs:string" minOccurs="0" />
+                <xs:element name="Typ" type="xs:string" minOccurs="0" />
+                <xs:element name="X" msdata:Caption="DataColumn1" type="xs:double" minOccurs="0" />
+                <xs:element name="Y" msdata:Caption="DataColumn1" type="xs:double" minOccurs="0" />
+                <xs:element name="Z" type="xs:double" minOccurs="0" />
+                <xs:element name="Diameter" msdata:Caption="DataColumn1" type="xs:double" minOccurs="0" />
+                <xs:element name="Depth" msdata:Caption="DataColumn1" type="xs:double" minOccurs="0" />
+                <xs:element name="DblB" type="xs:boolean" minOccurs="0" />
+                <xs:element name="DblL" msdata:Caption="DblB" type="xs:boolean" minOccurs="0" />
+                <xs:element name="DblE" msdata:Caption="DblB" type="xs:boolean" minOccurs="0" />
+                <xs:element name="Tool" msdata:Caption="DataColumn1" type="xs:string" minOccurs="0" />
+                <xs:element name="SVar" msdata:Caption="DataColumn1" type="xs:string" minOccurs="0" />
+                <xs:element name="SParallel" msdata:Caption="DataColumn1" type="xs:string" minOccurs="0" />
+                <xs:element name="SGrooveLength" type="xs:double" minOccurs="0" />
+                <xs:element name="Mill" type="xs:string" minOccurs="0" />
+                <xs:element name="ImageKey" type="xs:string" minOccurs="0" />
+                <xs:element name="OldID" type="xs:string" minOccurs="0" />
+                <xs:element name="KleiGeTei" type="xs:double" default="0" />
+                <xs:element name="GroupName" type="xs:string" minOccurs="0" />
+                <xs:element name="SortID" type="xs:string" minOccurs="0" />
+                <xs:element name="int1" type="xs:int" minOccurs="0" />
+                <xs:element name="int2" msdata:Caption="int1" type="xs:int" minOccurs="0" />
+                <xs:element name="int3" msdata:Caption="int1" type="xs:int" minOccurs="0" />
+                <xs:element name="dbl1" msdata:Caption="int1" type="xs:double" minOccurs="0" />
+                <xs:element name="dbl2" msdata:Caption="int1" type="xs:double" minOccurs="0" />
+                <xs:element name="dbl3" msdata:Caption="int1" type="xs:double" minOccurs="0" />
+                <xs:element name="str1" msdata:Caption="int1" type="xs:string" minOccurs="0" />
+                <xs:element name="str2" msdata:Caption="int1" type="xs:string" minOccurs="0" />
+                <xs:element name="str3" msdata:Caption="int1" type="xs:string" minOccurs="0" />
+                <xs:element name="Clause" type="xs:string" minOccurs="0" />
+                <xs:element name="iClauseState" type="xs:int" default="0" minOccurs="0" />
+              </xs:sequence>
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="PrgrFile">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="DELMARK" type="xs:string" minOccurs="0" />
+                <xs:element name="CntID" msdata:AutoIncrement="true" msdata:AutoIncrementSeed="1" type="xs:int" />
+                <xs:element name="ID" msdata:Caption="DataColumn1" type="xs:string" minOccurs="0" />
+                <xs:element name="RefVal1" msdata:Caption="DataColumn1" type="xs:string" minOccurs="0" />
+                <xs:element name="RefVal2" msdata:Caption="DataColumn1" type="xs:string" minOccurs="0" />
+                <xs:element name="RefLVL" type="xs:string" minOccurs="0" />
+                <xs:element name="Diameter" msdata:Caption="DataColumn1" type="xs:string" minOccurs="0" />
+                <xs:element name="Depth" msdata:Caption="DataColumn1" type="xs:string" minOccurs="0" />
+                <xs:element name="DoDbl" type="xs:boolean" default="false" />
+                <xs:element name="UsedDbl" type="xs:string" minOccurs="0" />
+                <xs:element name="DblB" type="xs:boolean" default="false" />
+                <xs:element name="DblL" msdata:Caption="DblB" type="xs:boolean" default="false" />
+                <xs:element name="DblE" msdata:Caption="DblB" type="xs:boolean" default="false" />
+                <xs:element name="DoMF" type="xs:boolean" default="false" minOccurs="0" />
+                <xs:element name="MFLage" type="xs:string" minOccurs="0" />
+                <xs:element name="Cols" msdata:Caption="DataColumn1" type="xs:string" minOccurs="0" />
+                <xs:element name="ColsAuto" msdata:Caption="DataColumn1" type="xs:string" minOccurs="0" />
+                <xs:element name="ColsDistance" msdata:Caption="DataColumn1" type="xs:string" minOccurs="0" />
+                <xs:element name="ColLRAbs" type="xs:string" minOccurs="0" />
+                <xs:element name="Rows" msdata:Caption="DataColumn1" type="xs:string" minOccurs="0" />
+                <xs:element name="RowsAuto" msdata:Caption="DataColumn1" type="xs:string" minOccurs="0" />
+                <xs:element name="RowsDistance" msdata:Caption="DataColumn1" type="xs:string" minOccurs="0" />
+                <xs:element name="RowTBAbs" type="xs:string" minOccurs="0" />
+                <xs:element name="Tool" msdata:Caption="DataColumn1" type="xs:string" minOccurs="0" />
+                <xs:element name="ObjName" msdata:Caption="DataColumn1" type="xs:string" minOccurs="0" />
+                <xs:element name="ObjFullPath" msdata:Caption="DataColumn1" type="xs:string" minOccurs="0" />
+                <xs:element name="ObjIsLinked" msdata:Caption="DataColumn1" type="xs:string" minOccurs="0" />
+                <xs:element name="ObjGrad" type="xs:string" minOccurs="0" />
+                <xs:element name="SVar" msdata:Caption="DataColumn1" type="xs:string" minOccurs="0" />
+                <xs:element name="SParallel" msdata:Caption="DataColumn1" type="xs:string" minOccurs="0" />
+                <xs:element name="SGrooveLength" type="xs:string" minOccurs="0" />
+                <xs:element name="Cyclic" type="xs:short" default="0" />
+                <xs:element name="Mill" type="xs:string" minOccurs="0" />
+                <xs:element name="ImageKey" type="xs:string" minOccurs="0" />
+                <xs:element name="Step" msprop:Generator_UserColumnName="Step" msprop:Generator_ColumnVarNameInTable="columnStep" msprop:Generator_ColumnPropNameInTable="StepColumn" type="xs:short" default="1" />
+                <xs:element name="GroupName" type="xs:string" minOccurs="0" />
+                <xs:element name="SortID" type="xs:short" minOccurs="0" />
+                <xs:element name="int1" msdata:Caption="i1" type="xs:int" minOccurs="0" />
+                <xs:element name="int2" msdata:Caption="i1" type="xs:int" minOccurs="0" />
+                <xs:element name="int3" type="xs:int" minOccurs="0" />
+                <xs:element name="dbl1" type="xs:double" minOccurs="0" />
+                <xs:element name="dbl2" msdata:Caption="dbl1" type="xs:double" minOccurs="0" />
+                <xs:element name="dbl3" type="xs:double" minOccurs="0" />
+                <xs:element name="str1" type="xs:string" minOccurs="0" />
+                <xs:element name="str2" msdata:Caption="str1" type="xs:string" minOccurs="0" />
+                <xs:element name="str3" type="xs:string" minOccurs="0" />
+                <xs:element name="Clause" type="xs:string" minOccurs="0" />
+                <xs:element name="iClauseState" type="xs:int" default="0" minOccurs="0" />
+                <xs:element name="IsActivated" type="xs:boolean" default="true" minOccurs="0" />
+              </xs:sequence>
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="PrgrWorkList">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="BeaName" type="xs:string" minOccurs="0" />
+                <xs:element name="Anschlag" type="xs:boolean" minOccurs="0" />
+                <xs:element name="MoveDirection" type="xs:boolean" minOccurs="0" />
+                <xs:element name="Vermessen" type="xs:boolean" minOccurs="0" />
+                <xs:element name="Laden" type="xs:boolean" minOccurs="0" />
+                <xs:element name="UsedMachine" type="xs:string" minOccurs="0" />
+                <xs:element name="WinkelVermessen" type="xs:boolean" minOccurs="0" />
+                <xs:element name="DoDelete" type="xs:boolean" minOccurs="0" />
+                <xs:element name="ChkFrontRear" type="xs:boolean" default="false" minOccurs="0" />
+                <xs:element name="SoftMode" type="xs:boolean" default="false" minOccurs="0" />
+              </xs:sequence>
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="CycleGroups">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="ID" msdata:AutoIncrement="true" type="xs:int" />
+                <xs:element name="GroupName" type="xs:string" minOccurs="0" />
+                <xs:element name="Plane" type="xs:string" minOccurs="0" />
+                <xs:element name="Ref" type="xs:string" minOccurs="0" />
+                <xs:element name="Info" type="xs:int" default="0" minOccurs="0" />
+                <xs:element name="Type" type="xs:int" default="0" minOccurs="0" />
+              </xs:sequence>
+            </xs:complexType>
+          </xs:element>
+        </xs:choice>
+      </xs:complexType>
+      <xs:unique name="CycleGroupsKey1" msdata:PrimaryKey="true">
+        <xs:selector xpath=".//mstns:CycleGroups" />
+        <xs:field xpath="mstns:ID" />
+      </xs:unique>
+    </xs:element>
+  </xs:schema>
+  <PrgrSet>
+    <PrgrName>DVL 150_B702</PrgrName>
+    <Description>SPODNA K DORAZU</Description>
+    <wsX>147</wsX>
+    <wsY>752</wsY>
+    <wsZ>18</wsZ>
+    <DoMF>False</DoMF>
+    <MFPos>0</MFPos>
+    <MFTool>T0</MFTool>
+  </PrgrSet>
+  <ParameterListe>
+    <ParamName>LX</ParamName>
+    <Value>147</Value>
+    <Description>Delka X </Description>
+    <ParamValue>147</ParamValue>
+    <SortID>1009</SortID>
+  </ParameterListe>
+  <ParameterListe>
+    <ParamName>LY</ParamName>
+    <Value>752</Value>
+    <Description>Delka Y </Description>
+    <ParamValue>752</ParamValue>
+    <SortID>1010</SortID>
+  </ParameterListe>
+  <ParameterListe>
+    <ParamName>LZ</ParamName>
+    <Value>18</Value>
+    <Description>Delka Z </Description>
+    <ParamValue>18</ParamValue>
+    <SortID>1011</SortID>
+  </ParameterListe>
+  <ParameterListe>
+    <ParamName>CLX</ParamName>
+    <Value>73,5</Value>
+    <Description>Delka X/2</Description>
+    <ParamValue>73,5</ParamValue>
+    <SortID>1012</SortID>
+  </ParameterListe>
+  <ParameterListe>
+    <ParamName>CLY</ParamName>
+    <Value>376</Value>
+    <Description>Delka Y/2</Description>
+    <ParamValue>376</ParamValue>
+    <SortID>1013</SortID>
+  </ParameterListe>
+  <ParameterListe>
+    <ParamName>CLZ</ParamName>
+    <Value>9</Value>
+    <Description>Delka Z/2</Description>
+    <ParamValue>9</ParamValue>
+    <SortID>1014</SortID>
+  </ParameterListe>
+  <ParameterListe>
+    <ParamName>SPSY</ParamName>
+    <Value>55</Value>
+    <Description>SPOJOVACKY VZDIALENOST v Y</Description>
+    <ParamValue>55</ParamValue>
+    <SortID>21</SortID>
+  </ParameterListe>
+  <ParameterListe>
+    <ParamName>SPSX</ParamName>
+    <Value>50,00</Value>
+    <Description>SPOJOVACKY VZDIALENOST v X</Description>
+    <ParamValue>50</ParamValue>
+    <SortID>20</SortID>
+  </ParameterListe>
+  <ParameterListe>
+    <ParamName>DVODD</ParamName>
+    <Value>2,5</Value>
+    <Description>DVERE ODSSADENIE Z DOLA</Description>
+    <ParamValue>2,5</ParamValue>
+    <SortID>19</SortID>
+  </ParameterListe>
+  <ParameterListe>
+    <ParamName>DVODH</ParamName>
+    <Value>2,5</Value>
+    <Description>DVERE ODSADENIE Z HORA</Description>
+    <ParamValue>2,5</ParamValue>
+    <SortID>18</SortID>
+  </ParameterListe>
+  <ParameterListe>
+    <ParamName>SKR_Z</ParamName>
+    <Value>550,00</Value>
+    <Description>SKRINKA HLBKA</Description>
+    <ParamValue>550</ParamValue>
+    <SortID>11</SortID>
+  </ParameterListe>
+  <ParameterListe>
+    <ParamName>SKR_Y</ParamName>
+    <Value>780,00</Value>
+    <Description>SKRINKA VYSKA</Description>
+    <ParamValue>780</ParamValue>
+    <SortID>10</SortID>
+  </ParameterListe>
+  <ParameterListe>
+    <ParamName>SKR_X</ParamName>
+    <Value>200</Value>
+    <Description>SKRINKA SIRKA</Description>
+    <ParamValue>200</ParamValue>
+    <SortID>9</SortID>
+  </ParameterListe>
+  <ParameterListe>
+    <ParamName>C2KAN</ParamName>
+    <Value>1</Value>
+    <Description>2 KOLIK CENTRAL ANO/NIE</Description>
+    <ParamValue>1</ParamValue>
+    <SortID>8</SortID>
+  </ParameterListe>
+  <ParameterListe>
+    <ParamName>C2KOL</ParamName>
+    <Value>128</Value>
+    <Description>ROZTEC 2KOL CENTRAL</Description>
+    <ParamValue>128</ParamValue>
+    <SortID>7</SortID>
+  </ParameterListe>
+  <ParameterListe>
+    <ParamName>KOROD</ParamName>
+    <Value>0,5</Value>
+    <Description>KORPUS ODSAD DIELCOV Z PREDU</Description>
+    <ParamValue>0,5</ParamValue>
+    <SortID>6</SortID>
+  </ParameterListe>
+  <ParameterListe>
+    <ParamName>POLMN</ParamName>
+    <Value>1</Value>
+    <Description>POLICA POCET</Description>
+    <ParamValue>1</ParamValue>
+    <SortID>4</SortID>
+  </ParameterListe>
+  <ParameterListe>
+    <ParamName>SPSAN</ParamName>
+    <Value>1</Value>
+    <Description>SPOJOVACKY ANO/NIE</Description>
+    <ParamValue>1</ParamValue>
+    <SortID>22</SortID>
+  </ParameterListe>
+  <ParameterListe>
+    <ParamName>UCHX</ParamName>
+    <Value>50</Value>
+    <Description>UCHYTKA ODSADENIE v X</Description>
+    <ParamValue>50</ParamValue>
+    <SortID>23</SortID>
+  </ParameterListe>
+  <ParameterListe>
+    <ParamName>UCHY</ParamName>
+    <Value>50</Value>
+    <Description>UCHYTKA ODSADENIE v Y</Description>
+    <ParamValue>50</ParamValue>
+    <SortID>24</SortID>
+  </ParameterListe>
+  <ParameterListe>
+    <ParamName>UCHVR</ParamName>
+    <Value>128</Value>
+    <Description>UCHYTKA VELKOST/RASTER</Description>
+    <ParamValue>128</ParamValue>
+    <SortID>25</SortID>
+  </ParameterListe>
+  <ParameterListe>
+    <ParamName>UCHH</ParamName>
+    <Value>0</Value>
+    <Description>UCHYTKA HORIZONT ANO=1/NIE=0</Description>
+    <ParamValue>0</ParamValue>
+    <SortID>26</SortID>
+  </ParameterListe>
+  <ParameterListe>
+    <ParamName>UCHV</ParamName>
+    <Value>0</Value>
+    <Description>UCHYTKA VERTIKAL ANO=1/NIE=0</Description>
+    <ParamValue>0</ParamValue>
+    <SortID>27</SortID>
+  </ParameterListe>
+  <ParameterListe>
+    <ParamName>UCHK</ParamName>
+    <Value>0</Value>
+    <Description>UCHYTKA KNOPKA ANO=1/NIE=0</Description>
+    <ParamValue>0</ParamValue>
+    <SortID>3</SortID>
+  </ParameterListe>
+  <ParameterListe>
+    <ParamName>KNFOD</ParamName>
+    <Value>4</Value>
+    <Description>KONF+KOL ODSADENIE v X</Description>
+    <ParamValue>4</ParamValue>
+    <SortID>2</SortID>
+  </ParameterListe>
+  <ParameterListe>
+    <ParamName>CHRBZ</ParamName>
+    <Value>4</Value>
+    <Description>CHRBAT HRUBKA (4)</Description>
+    <ParamValue>4</ParamValue>
+    <SortID>1</SortID>
+  </ParameterListe>
+  <Root>
+    <Extension>.ganx</Extension>
+    <Version>1.2.0.134</Version>
+    <CreationDate>2024-05-01T03:43:56.25+01:00</CreationDate>
+    <CreationApp>GannoMAT_Editor_1v3 - 1.3.0.118</CreationApp>
+    <ModificationApp>GannoMAT_Protec - 1.2.0.134</ModificationApp>
+  </Root>
+  <PrgrWork>
+    <ProgrammID>Prgr-0</ProgrammID>
+    <CycleID>B1</CycleID>
+    <IsActivated>False</IsActivated>
+    <Var>VAR5</Var>
+    <Machine>Protec 0571EF3</Machine>
+    <Clause>{UCHK}=1</Clause>
+    <iClauseState>-1</iClauseState>
+  </PrgrWork>
+  <PrgrWork>
+    <ProgrammID>Prgr-0</ProgrammID>
+    <CycleID>B2</CycleID>
+    <IsActivated>False</IsActivated>
+    <Var>VAR5</Var>
+    <Machine>Protec 0571EF3</Machine>
+    <Clause>{UCHH}=1</Clause>
+    <iClauseState>-1</iClauseState>
+  </PrgrWork>
+  <PrgrWork>
+    <ProgrammID>Prgr-0</ProgrammID>
+    <CycleID>B3</CycleID>
+    <IsActivated>False</IsActivated>
+    <Var>VAR5</Var>
+    <Machine>Protec 0571EF3</Machine>
+    <Clause>{UCHH}=1</Clause>
+    <iClauseState>-1</iClauseState>
+  </PrgrWork>
+  <PrgrWork>
+    <ProgrammID>Prgr-0</ProgrammID>
+    <CycleID>B4</CycleID>
+    <IsActivated>False</IsActivated>
+    <Var>VAR5</Var>
+    <Machine>Protec 0571EF3</Machine>
+    <Clause>{UCHV}=1</Clause>
+    <iClauseState>-1</iClauseState>
+  </PrgrWork>
+  <PrgrWork>
+    <ProgrammID>Prgr-0</ProgrammID>
+    <CycleID>B5</CycleID>
+    <IsActivated>False</IsActivated>
+    <Var>VAR5</Var>
+    <Machine>Protec 0571EF3</Machine>
+    <Clause>{UCHV}=1</Clause>
+    <iClauseState>-1</iClauseState>
+  </PrgrWork>
+  <PrgrWork>
+    <ProgrammID>Prgr-0</ProgrammID>
+    <CycleID>B6</CycleID>
+    <IsActivated>True</IsActivated>
+    <Var>VAR5</Var>
+    <Machine>Protec 0571EF3</Machine>
+    <Clause />
+    <iClauseState>0</iClauseState>
+  </PrgrWork>
+  <PrgrWork>
+    <ProgrammID>Prgr-0</ProgrammID>
+    <CycleID>B7</CycleID>
+    <IsActivated>True</IsActivated>
+    <Var>VAR5</Var>
+    <Machine>Protec 0571EF3</Machine>
+    <Clause />
+    <iClauseState>0</iClauseState>
+  </PrgrWork>
+  <PrgrWork>
+    <ProgrammID>Prgr-0</ProgrammID>
+    <CycleID>B8</CycleID>
+    <IsActivated>True</IsActivated>
+    <Var>VAR5</Var>
+    <Machine>Protec 0571EF3</Machine>
+    <Clause />
+    <iClauseState>0</iClauseState>
+  </PrgrWork>
+  <PrgrWork>
+    <ProgrammID>Prgr-0</ProgrammID>
+    <CycleID>B9</CycleID>
+    <IsActivated>True</IsActivated>
+    <Var>VAR5</Var>
+    <Machine>Protec 0571EF3</Machine>
+    <Clause />
+    <iClauseState>0</iClauseState>
+  </PrgrWork>
+  <PrgrFileWork>
+    <CntID>1</CntID>
+    <Plane>Bottom</Plane>
+    <Ref>BR</Ref>
+    <Typ>B</Typ>
+    <X>97</X>
+    <Y>702</Y>
+    <Z>0</Z>
+    <Diameter>5</Diameter>
+    <Depth>21</Depth>
+    <Tool>T51</Tool>
+    <OldID>Bottom\BR\B-9</OldID>
+    <KleiGeTei>21</KleiGeTei>
+    <Clause>{UCHK}=1</Clause>
+    <iClauseState>-1</iClauseState>
+  </PrgrFileWork>
+  <PrgrFileWork>
+    <CntID>2</CntID>
+    <Plane>Bottom</Plane>
+    <Ref>BR</Ref>
+    <Typ>B</Typ>
+    <X>97</X>
+    <Y>702</Y>
+    <Z>0</Z>
+    <Diameter>5</Diameter>
+    <Depth>21</Depth>
+    <DblB>false</DblB>
+    <DblL>false</DblL>
+    <DblE>false</DblE>
+    <Tool>T51</Tool>
+    <ImageKey>BR</ImageKey>
+    <OldID>Bottom\BR\BR-7</OldID>
+    <KleiGeTei>21</KleiGeTei>
+    <Clause>{UCHH}=1</Clause>
+    <iClauseState>-1</iClauseState>
+  </PrgrFileWork>
+  <PrgrFileWork>
+    <CntID>3</CntID>
+    <Plane>Bottom</Plane>
+    <Ref>BR</Ref>
+    <Typ>B</Typ>
+    <X>-31</X>
+    <Y>702</Y>
+    <Z>0</Z>
+    <Diameter>5</Diameter>
+    <Depth>21</Depth>
+    <DblB>false</DblB>
+    <DblL>false</DblL>
+    <DblE>false</DblE>
+    <Tool>T51</Tool>
+    <ImageKey>BR</ImageKey>
+    <OldID>Bottom\BR\BR-7</OldID>
+    <KleiGeTei>21</KleiGeTei>
+    <Clause>{UCHH}=1</Clause>
+    <iClauseState>-1</iClauseState>
+  </PrgrFileWork>
+  <PrgrFileWork>
+    <CntID>4</CntID>
+    <Plane>Bottom</Plane>
+    <Ref>BR</Ref>
+    <Typ>B</Typ>
+    <X>97</X>
+    <Y>702</Y>
+    <Z>0</Z>
+    <Diameter>5</Diameter>
+    <Depth>21</Depth>
+    <DblB>false</DblB>
+    <DblL>false</DblL>
+    <DblE>false</DblE>
+    <Tool>T51</Tool>
+    <ImageKey>BR</ImageKey>
+    <OldID>Bottom\BR\BR-8</OldID>
+    <KleiGeTei>21</KleiGeTei>
+    <Clause>{UCHV}=1</Clause>
+    <iClauseState>-1</iClauseState>
+  </PrgrFileWork>
+  <PrgrFileWork>
+    <CntID>5</CntID>
+    <Plane>Bottom</Plane>
+    <Ref>BR</Ref>
+    <Typ>B</Typ>
+    <X>97</X>
+    <Y>574</Y>
+    <Z>0</Z>
+    <Diameter>5</Diameter>
+    <Depth>21</Depth>
+    <DblB>false</DblB>
+    <DblL>false</DblL>
+    <DblE>false</DblE>
+    <Tool>T51</Tool>
+    <ImageKey>BR</ImageKey>
+    <OldID>Bottom\BR\BR-8</OldID>
+    <KleiGeTei>21</KleiGeTei>
+    <Clause>{UCHV}=1</Clause>
+    <iClauseState>-1</iClauseState>
+  </PrgrFileWork>
+  <PrgrFileWork>
+    <CntID>6</CntID>
+    <Plane>Bottom</Plane>
+    <Ref>TR</Ref>
+    <Typ>B</Typ>
+    <X>87</X>
+    <Y>106</Y>
+    <Z>0</Z>
+    <Diameter>3</Diameter>
+    <Depth>2</Depth>
+    <DblB>false</DblB>
+    <DblL>false</DblL>
+    <DblE>false</DblE>
+    <Tool>T31</Tool>
+    <ImageKey>BR</ImageKey>
+    <OldID>Bottom\TR\BR-11</OldID>
+    <KleiGeTei>2</KleiGeTei>
+    <Clause />
+    <iClauseState>0</iClauseState>
+  </PrgrFileWork>
+  <PrgrFileWork>
+    <CntID>7</CntID>
+    <Plane>Bottom</Plane>
+    <Ref>TR</Ref>
+    <Typ>B</Typ>
+    <X>87</X>
+    <Y>576</Y>
+    <Z>0</Z>
+    <Diameter>3</Diameter>
+    <Depth>2</Depth>
+    <DblB>false</DblB>
+    <DblL>false</DblL>
+    <DblE>false</DblE>
+    <Tool>T31</Tool>
+    <ImageKey>BR</ImageKey>
+    <OldID>Bottom\TR\BR-11</OldID>
+    <KleiGeTei>2</KleiGeTei>
+    <Clause />
+    <iClauseState>0</iClauseState>
+  </PrgrFileWork>
+  <PrgrFileWork>
+    <CntID>8</CntID>
+    <Plane>Bottom</Plane>
+    <Ref>TR</Ref>
+    <Typ>B</Typ>
+    <X>59</X>
+    <Y>106</Y>
+    <Z>0</Z>
+    <Diameter>3</Diameter>
+    <Depth>2</Depth>
+    <DblB>false</DblB>
+    <DblL>false</DblL>
+    <DblE>false</DblE>
+    <Tool>T31</Tool>
+    <ImageKey>BR</ImageKey>
+    <OldID>Bottom\TR\BR-11</OldID>
+    <KleiGeTei>2</KleiGeTei>
+    <Clause />
+    <iClauseState>0</iClauseState>
+  </PrgrFileWork>
+  <PrgrFileWork>
+    <CntID>9</CntID>
+    <Plane>Bottom</Plane>
+    <Ref>TR</Ref>
+    <Typ>B</Typ>
+    <X>59</X>
+    <Y>576</Y>
+    <Z>0</Z>
+    <Diameter>3</Diameter>
+    <Depth>2</Depth>
+    <DblB>false</DblB>
+    <DblL>false</DblL>
+    <DblE>false</DblE>
+    <Tool>T31</Tool>
+    <ImageKey>BR</ImageKey>
+    <OldID>Bottom\TR\BR-11</OldID>
+    <KleiGeTei>2</KleiGeTei>
+    <Clause />
+    <iClauseState>0</iClauseState>
+  </PrgrFileWork>
+  <PrgrFile>
+    <DELMARK>OK</DELMARK>
+    <CntID>7</CntID>
+    <ID>Bottom\BR\BR-7</ID>
+    <RefVal1>{UCHY}</RefVal1>
+    <RefVal2>{UCHX}</RefVal2>
+    <RefLVL>0</RefLVL>
+    <Diameter>5,00</Diameter>
+    <Depth>21</Depth>
+    <DoDbl>false</DoDbl>
+    <UsedDbl>ERR</UsedDbl>
+    <DblB>true</DblB>
+    <DblL>false</DblL>
+    <DblE>false</DblE>
+    <DoMF>false</DoMF>
+    <Cols>2</Cols>
+    <ColsDistance>{UCHVR}</ColsDistance>
+    <Rows>1</Rows>
+    <RowsDistance>{UCHVR}</RowsDistance>
+    <Tool>T51</Tool>
+    <SVar>VAR1</SVar>
+    <Cyclic>1</Cyclic>
+    <ImageKey>BR</ImageKey>
+    <Step>1</Step>
+    <Clause>{UCHH}=1</Clause>
+    <iClauseState>-1</iClauseState>
+    <IsActivated>true</IsActivated>
+  </PrgrFile>
+  <PrgrFile>
+    <DELMARK>OK</DELMARK>
+    <CntID>8</CntID>
+    <ID>Bottom\BR\BR-8</ID>
+    <RefVal1>{UCHY}</RefVal1>
+    <RefVal2>{UCHX}</RefVal2>
+    <RefLVL>0</RefLVL>
+    <Diameter>5,00</Diameter>
+    <Depth>21</Depth>
+    <DoDbl>false</DoDbl>
+    <UsedDbl>ERR</UsedDbl>
+    <DblB>true</DblB>
+    <DblL>false</DblL>
+    <DblE>false</DblE>
+    <DoMF>false</DoMF>
+    <Cols>1</Cols>
+    <ColsDistance>{UCHVR}</ColsDistance>
+    <Rows>2</Rows>
+    <RowsDistance>{UCHVR}</RowsDistance>
+    <Tool>T51</Tool>
+    <SVar>VAR1</SVar>
+    <Cyclic>1</Cyclic>
+    <ImageKey>BR</ImageKey>
+    <Step>1</Step>
+    <Clause>{UCHV}=1</Clause>
+    <iClauseState>-1</iClauseState>
+    <IsActivated>true</IsActivated>
+  </PrgrFile>
+  <PrgrFile>
+    <DELMARK>OK</DELMARK>
+    <CntID>9</CntID>
+    <ID>Bottom\BR\B-9</ID>
+    <RefVal1>{UCHY}</RefVal1>
+    <RefVal2>{UCHX}</RefVal2>
+    <RefLVL>0</RefLVL>
+    <Diameter>5,00</Diameter>
+    <Depth>21</Depth>
+    <DoDbl>false</DoDbl>
+    <UsedDbl />
+    <DblB>false</DblB>
+    <DblL>false</DblL>
+    <DblE>false</DblE>
+    <DoMF>false</DoMF>
+    <MFLage>T</MFLage>
+    <Tool>T51</Tool>
+    <Cyclic>1</Cyclic>
+    <ImageKey>B</ImageKey>
+    <Step>1</Step>
+    <Clause>{UCHK}=1</Clause>
+    <iClauseState>-1</iClauseState>
+    <IsActivated>true</IsActivated>
+  </PrgrFile>
+  <PrgrFile>
+    <DELMARK>OK</DELMARK>
+    <CntID>11</CntID>
+    <ID>Bottom\TR\BR-11</ID>
+    <RefVal1>106</RefVal1>
+    <RefVal2>60</RefVal2>
+    <RefLVL>0</RefLVL>
+    <Diameter>3,00</Diameter>
+    <Depth>2</Depth>
+    <DoDbl>false</DoDbl>
+    <UsedDbl>ERR</UsedDbl>
+    <DblB>true</DblB>
+    <DblL>false</DblL>
+    <DblE>false</DblE>
+    <DoMF>false</DoMF>
+    <Cols>2</Cols>
+    <ColsDistance>28</ColsDistance>
+    <Rows>2</Rows>
+    <RowsDistance>470</RowsDistance>
+    <Tool>T31</Tool>
+    <SVar>VAR1</SVar>
+    <Cyclic>1</Cyclic>
+    <ImageKey>BR</ImageKey>
+    <Step>1</Step>
+    <Clause />
+    <iClauseState>0</iClauseState>
+    <IsActivated>true</IsActivated>
+  </PrgrFile>
+  <PrgrWorkList>
+    <BeaName>Prgr-0</BeaName>
+    <Anschlag>false</Anschlag>
+    <MoveDirection>true</MoveDirection>
+    <Vermessen>true</Vermessen>
+    <Laden>true</Laden>
+    <UsedMachine>Protec 0571EF3</UsedMachine>
+    <ChkFrontRear>true</ChkFrontRear>
+    <SoftMode>true</SoftMode>
+  </PrgrWorkList>
+</Programm>
