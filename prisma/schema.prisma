@@ -1,0 +1,184 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Používateľ aplikácie
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("user")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  sessions Session[]
+
+  @@map("users")
+}
+
+/// Session pre autentifikáciu
+model Session {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@map("sessions")
+}
+
+// =====================================================
+// KATALÓG SKRINIEK
+// =====================================================
+
+/// Kategória skriniek
+model CabinetCategory {
+  id        String            @id @default(cuid())
+  name      String
+  slug      String            @unique
+  parentId  String?           @map("parent_id")
+  parent    CabinetCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children  CabinetCategory[] @relation("CategoryHierarchy")
+  cabinets  Cabinet[]
+  createdAt DateTime          @default(now()) @map("created_at")
+
+  @@map("cabinet_categories")
+}
+
+/// Skrinka v katalógu (template)
+model Cabinet {
+  id          String           @id @default(cuid())
+  name        String
+  slug        String           @unique
+  categoryId  String?          @map("category_id")
+  category    CabinetCategory? @relation(fields: [categoryId], references: [id])
+  baseWidth   Float?           @map("base_width")
+  baseHeight  Float?           @map("base_height")
+  baseDepth   Float?           @map("base_depth")
+  catalogPath String           @map("catalog_path")
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+
+  files      CabinetFile[]
+  parameters CabinetParameter[]
+  jobItems   JobItem[]
+
+  @@map("cabinets")
+}
+
+/// Súbor .ganx v skrinke
+model CabinetFile {
+  id           String   @id @default(cuid())
+  cabinetId    String   @map("cabinet_id")
+  cabinet      Cabinet  @relation(fields: [cabinetId], references: [id], onDelete: Cascade)
+  filename     String
+  relativePath String   @map("relative_path")
+  hash         String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  parameterUsages CabinetParameterUsage[]
+
+  @@index([cabinetId])
+  @@map("cabinet_files")
+}
+
+/// Parameter skrinky (deduplikovaný naprieč súbormi)
+model CabinetParameter {
+  id           String   @id @default(cuid())
+  cabinetId    String   @map("cabinet_id")
+  cabinet      Cabinet  @relation(fields: [cabinetId], references: [id], onDelete: Cascade)
+  paramName    String   @map("param_name")
+  label        String
+  paramType    String   @default("number") @map("param_type")
+  unit         String?
+  defaultValue String?  @map("default_value")
+  sortId       Int?     @map("sort_id")
+
+  usages CabinetParameterUsage[]
+
+  @@unique([cabinetId, paramName])
+  @@index([cabinetId])
+  @@map("cabinet_parameters")
+}
+
+/// Použitie parametra v konkrétnom súbore
+model CabinetParameterUsage {
+  id          String           @id @default(cuid())
+  parameterId String           @map("parameter_id")
+  parameter   CabinetParameter @relation(fields: [parameterId], references: [id], onDelete: Cascade)
+  fileId      String           @map("file_id")
+  file        CabinetFile      @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  xmlPath     String           @map("xml_path")
+
+  @@index([parameterId])
+  @@index([fileId])
+  @@map("cabinet_parameter_usages")
+}
+
+// =====================================================
+// ZÁKAZKY (JOBS)
+// =====================================================
+
+/// Zákazka
+model Job {
+  id          String      @id @default(cuid())
+  name        String
+  description String?
+  status      String      @default("draft") // draft, generating, completed
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  items       JobItem[]
+
+  @@map("jobs")
+}
+
+/// Položka zákazky (inštancia skrinky)
+model JobItem {
+  id          String    @id @default(cuid())
+  jobId       String    @map("job_id")
+  job         Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  cabinetId   String    @map("cabinet_id")
+  cabinet     Cabinet   @relation(fields: [cabinetId], references: [id])
+  
+  name        String    // Unikátny názov v rámci zákazky (napr. Skrinka_1)
+  width       Float?    // Prepísaná šírka (evidencia/recalc)
+  height      Float?    // Prepísaná výška
+  depth       Float?    // Prepísaná hĺbka
+  quantity    Int       @default(1) // Evidencia
+  
+  outputStatus String   @default("pending") @map("output_status") // pending, generating, generated, error
+  
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  parameterValues JobItemParameterValue[]
+
+  @@unique([jobId, name]) // Názov musí byť v zákazke unikátny
+  @@map("job_items")
+}
+
+/// Hodnota parametra pre konkrétnu položku
+model JobItemParameterValue {
+  id          String    @id @default(cuid())
+  itemId      String    @map("item_id")
+  item        JobItem   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  paramName   String    @map("param_name")
+  value       String
+
+  @@unique([itemId, paramName])
+  @@map("job_item_parameter_values")
+}
