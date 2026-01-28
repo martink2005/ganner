@@ -1,0 +1,22 @@
+diff --git a/node_modules/next/dist/server/base-server.js b/node_modules/next/dist/server/base-server.js
+index 6855878..b5042bc 100644
+--- a/node_modules/next/dist/server/base-server.js
++++ b/node_modules/next/dist/server/base-server.js
+@@ -473,7 +473,7 @@ class Server {
+             // ensure cookies set in middleware are merged and
+             // not overridden by API routes/getServerSideProps
+             const _res = res.originalResponse || res;
+-            const origSetHeader = _res.setHeader.bind(_res);
++            const origSetHeader = _res.setHeader?.bind(_res);
+             _res.setHeader = (name, val)=>{
+                 // When renders /_error after page is failed,
+                 // it could attempt to set headers after headers
+@@ -494,7 +494,7 @@ class Server {
+                         ];
+                     }
+                 }
+-                return origSetHeader(name, val);
++                return origSetHeader?.(name, val);
+             };
+             const urlParts = (req.url || "").split("?", 1);
+             const urlNoQuery = urlParts[0];

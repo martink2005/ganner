@@ -218,3 +218,54 @@ export function updateGanxParameters(
 
     return updatedXml;
 }
+
+/**
+ * Operácia na dielci (napr. vŕtanie)
+ */
+export interface GanxOperation {
+    id: number; // <CntID>
+    type: string; // <Typ> (B = vŕtanie)
+    x: number; // <X>
+    y: number; // <Y>
+    z: number; // <Z>
+    diameter?: number; // <Diameter>
+    depth?: number; // <Depth>
+    plane?: string; // <Plane>
+    ref?: string; // <Ref>
+}
+
+/**
+ * Extrahuje všetky operácie z <PrgrFileWork> elementov
+ */
+export function extractOperations(xml: string): GanxOperation[] {
+    const operations: GanxOperation[] = [];
+
+    // Regex pre PrgrFileWork
+    const workRegex = /<PrgrFileWork>([\s\S]*?)<\/PrgrFileWork>/g;
+    let match;
+
+    while ((match = workRegex.exec(xml)) !== null) {
+        const workXml = match[1];
+
+        // Extrahujeme základné údaje
+        const type = extractElementText(workXml, "Typ", 0);
+
+        // Zatiaľ nás zaujímajú hlavne vŕtania (Typ = B)
+        // Môžeme pridať aj iné typy ak bude treba
+        if (type) {
+            operations.push({
+                id: parseInt(extractElementText(workXml, "CntID", 0) || "0", 10),
+                type,
+                x: parseNumber(extractElementText(workXml, "X", 0) || "0"),
+                y: parseNumber(extractElementText(workXml, "Y", 0) || "0"),
+                z: parseNumber(extractElementText(workXml, "Z", 0) || "0"),
+                diameter: parseNumber(extractElementText(workXml, "Diameter", 0) || "0"),
+                depth: parseNumber(extractElementText(workXml, "Depth", 0) || "0"),
+                plane: extractElementText(workXml, "Plane", 0) || undefined,
+                ref: extractElementText(workXml, "Ref", 0) || undefined,
+            });
+        }
+    }
+
+    return operations;
+}

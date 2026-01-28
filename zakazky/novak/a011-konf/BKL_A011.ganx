@@ -197,9 +197,9 @@
   </PrgrSet>
   <ParameterListe>
     <ParamName>LX</ParamName>
-    <Value>560</Value>
+    <Value>340</Value>
     <Description>Delka X </Description>
-    <ParamValue>560</ParamValue>
+    <ParamValue>340</ParamValue>
     <SortID>1034</SortID>
   </ParameterListe>
   <ParameterListe>
