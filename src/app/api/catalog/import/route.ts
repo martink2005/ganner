@@ -23,8 +23,37 @@ export async function POST(request: NextRequest) {
         );
 
         if (!result.success) {
+            const formatOne = (raw: string) => {
+                // Očakávaný tvar z importu:
+                // Súbor "NAME.ganx" sa nedá importovať:
+                //   - ...
+                //   - ...
+                const m = raw.match(/^Súbor\s+"([^"]+)"\s+sa\s+nedá\s+importovať:\s*\n?/);
+                const filename = m?.[1];
+                const rest = m ? raw.slice(m[0].length) : raw;
+
+                // Chceme blok:
+                // • NAME.ganx
+                //   - ...
+                const normalizedRest = rest
+                    .trim()
+                    // zabezpeč, že každá odrážka je odsadená
+                    .replace(/^\s*-\s+/gm, "  - ");
+
+                return filename
+                    ? `• ${filename}\n${normalizedRest ? `${normalizedRest}` : ""}`.trim()
+                    : `• ${raw.trim()}`;
+            };
+
+            const errorMessage =
+                result.errors.length <= 1
+                    ? `Import sa nepodaril.\n\n${formatOne(result.errors[0] ?? "")}`
+                    : `Import sa nepodaril.\n\nSkontroluj nasledujúce súbory:\n\n${result.errors
+                          .map(formatOne)
+                          .join("\n\n")}`;
+
             return NextResponse.json(
-                { error: result.errors.join(", "), errors: result.errors },
+                { error: errorMessage, errors: result.errors },
                 { status: 400 }
             );
         }

@@ -238,6 +238,27 @@
     <SortID>1037</SortID>
   </ParameterListe>
   <ParameterListe>
+    <ParamName>X_C_Y</ParamName>
+    <Value>0</Value>
+    <Description>Súradnicový parameter (validácia importu)</Description>
+    <ParamValue>0</ParamValue>
+    <SortID>1038</SortID>
+  </ParameterListe>
+  <ParameterListe>
+    <ParamName>Y_C_X</ParamName>
+    <Value>0</Value>
+    <Description>Súradnicový parameter (validácia importu)</Description>
+    <ParamValue>0</ParamValue>
+    <SortID>1039</SortID>
+  </ParameterListe>
+  <ParameterListe>
+    <ParamName>HRUB</ParamName>
+    <Value>18</Value>
+    <Description>Hrúbka materiálu</Description>
+    <ParamValue>18</ParamValue>
+    <SortID>1040</SortID>
+  </ParameterListe>
+  <ParameterListe>
     <ParamName>POLMN</ParamName>
     <Value>1,00</Value>
     <Description>POLICA POCET</Description>

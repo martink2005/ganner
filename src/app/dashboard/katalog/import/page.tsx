@@ -175,7 +175,7 @@ export default function ImportPage() {
                         />
 
                         {error && (
-                            <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+                            <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md whitespace-pre-wrap">
                                 {error}
                             </div>
                         )}

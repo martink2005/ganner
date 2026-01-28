@@ -152,6 +152,34 @@ export async function importCabinet(
             const parsed = parseGanxFile(content);
             allParameters.push(...parsed.parameters);
 
+            // Validácie pre každý .ganx (fail-safe)
+            // - musí obsahovať aspoň 2 parametre typu X_C_Y, Y_C_X, Z_C_Z (kombinácie X/Y/Z, C fixne v strede)
+            // - musí obsahovať povinný parameter HRUB
+            const issues: string[] = [];
+
+            const coordParamCount = parsed.parameters.filter((p) =>
+                /^[XYZ]_C_[XYZ]$/.test(p.paramName)
+            ).length;
+
+            if (coordParamCount < 2) {
+                issues.push(
+                    `chýbajú parametre v tvare X_C_Y (kde X/Y/Z). Potrebné sú aspoň 2, našiel som ${coordParamCount}. Príklad: X_C_Y, Y_C_X.`
+                );
+            }
+
+            const hasHrub = parsed.parameters.some((p) => p.paramName === "HRUB");
+            if (!hasHrub) {
+                issues.push(`chýba povinný parameter HRUB.`);
+            }
+
+            if (issues.length > 0) {
+                errors.push(
+                    `Súbor "${filename}" sa nedá importovať:\n  - ${issues.join(
+                        "\n  - "
+                    )}`
+                );
+            }
+
             // Získaj rozmery z prvého súboru
             if (parsed.prgrSet && baseWidth === null) {
                 baseWidth = parsed.prgrSet.wsX;
@@ -160,8 +188,22 @@ export async function importCabinet(
             }
         }
 
+        // Ak validácie zlyhali, skonči pred zápisom na disk/DB
+        if (errors.length > 0) {
+            return {
+                success: false,
+                filesCount: 0,
+                parametersCount: 0,
+                errors,
+            };
+        }
+
         // 5. Deduplikuj parametre
         const uniqueParameters = deduplicateParameters(allParameters);
+        const EXCLUDED_PARAMS = new Set(["CLX", "CLY", "CLZ", "LX", "LY", "LZ"]);
+        const dbParameters = uniqueParameters.filter(
+            (param) => !EXCLUDED_PARAMS.has(param.paramName)
+        );
 
         // 6. Vytvor priečinok v katalógu
         const catalogPath = path.join(catalogRoot, slug);
@@ -190,7 +232,7 @@ export async function importCabinet(
                     })),
                 },
                 parameters: {
-                    create: uniqueParameters.map((param) => ({
+                    create: dbParameters.map((param) => ({
                         paramName: param.paramName,
                         label: param.description || param.paramName,
                         paramType: inferParameterType(param.value, param.description),

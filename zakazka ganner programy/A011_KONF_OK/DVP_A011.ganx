@@ -186,10 +186,10 @@
     </xs:element>
   </xs:schema>
   <PrgrSet>
-    <PrgrName>DVL_A011</PrgrName>
+    <PrgrName>DVP_A011</PrgrName>
     <Description>HORNA K DORAZU</Description>
     <wsX>633</wsX>
-    <wsY>522</wsY>
+    <wsY>552</wsY>
     <wsZ>18</wsZ>
     <DoMF>False</DoMF>
     <MFPos>0</MFPos>
@@ -204,9 +204,9 @@
   </ParameterListe>
   <ParameterListe>
     <ParamName>LY</ParamName>
-    <Value>522</Value>
+    <Value>552</Value>
     <Description>Delka Y </Description>
-    <ParamValue>522</ParamValue>
+    <ParamValue>552</ParamValue>
     <SortID>1010</SortID>
   </ParameterListe>
   <ParameterListe>
@@ -225,9 +225,9 @@
   </ParameterListe>
   <ParameterListe>
     <ParamName>CLY</ParamName>
-    <Value>261</Value>
+    <Value>276</Value>
     <Description>Delka Y/2</Description>
-    <ParamValue>261</ParamValue>
+    <ParamValue>276</ParamValue>
     <SortID>1013</SortID>
   </ParameterListe>
   <ParameterListe>
@@ -236,6 +236,27 @@
     <Description>Delka Z/2</Description>
     <ParamValue>9</ParamValue>
     <SortID>1014</SortID>
+  </ParameterListe>
+  <ParameterListe>
+    <ParamName>X_C_Y</ParamName>
+    <Value>0</Value>
+    <Description>Súradnicový parameter (validácia importu)</Description>
+    <ParamValue>0</ParamValue>
+    <SortID>1015</SortID>
+  </ParameterListe>
+  <ParameterListe>
+    <ParamName>Y_C_X</ParamName>
+    <Value>0</Value>
+    <Description>Súradnicový parameter (validácia importu)</Description>
+    <ParamValue>0</ParamValue>
+    <SortID>1016</SortID>
+  </ParameterListe>
+  <ParameterListe>
+    <ParamName>HRUB</ParamName>
+    <Value>18</Value>
+    <Description>Hrúbka materiálu</Description>
+    <ParamValue>18</ParamValue>
+    <SortID>1017</SortID>
   </ParameterListe>
   <ParameterListe>
     <ParamName>SPSY</ParamName>
@@ -331,7 +352,7 @@
   <ParameterListe>
     <ParamName>C2KAN</ParamName>
     <Value>1</Value>
-    <Description>2 KOLIK CENTRAL ANO/NIE</Description>
+    <Description>2 KOLIK CENTRAL ANO=1/NIE=0</Description>
     <ParamValue>1</ParamValue>
     <SortID>8</SortID>
   </ParameterListe>
@@ -366,7 +387,7 @@
   <ParameterListe>
     <ParamName>SPSAN</ParamName>
     <Value>1</Value>
-    <Description>SPOJOVACKY ANO/NIE</Description>
+    <Description>SPOJOVACKY ANO=1/NIE=0</Description>
     <ParamValue>1</ParamValue>
     <SortID>22</SortID>
   </ParameterListe>
@@ -475,7 +496,7 @@
     <IsActivated>False</IsActivated>
     <Var>VAR5</Var>
     <Machine>Protec 0571EF3</Machine>
-    <Clause>{UCHK}=1</Clause>
+    <Clause>{ZA3AN}=1</Clause>
     <iClauseState>-1</iClauseState>
   </PrgrWork>
   <PrgrWork>
@@ -484,7 +505,7 @@
     <IsActivated>False</IsActivated>
     <Var>VAR5</Var>
     <Machine>Protec 0571EF3</Machine>
-    <Clause>{UCHH}=1</Clause>
+    <Clause>{ZA3AN}=1</Clause>
     <iClauseState>-1</iClauseState>
   </PrgrWork>
   <PrgrWork>
@@ -493,7 +514,7 @@
     <IsActivated>False</IsActivated>
     <Var>VAR5</Var>
     <Machine>Protec 0571EF3</Machine>
-    <Clause>{UCHH}=1</Clause>
+    <Clause>{ZA3AN}=1</Clause>
     <iClauseState>-1</iClauseState>
   </PrgrWork>
   <PrgrWork>
@@ -502,17 +523,17 @@
     <IsActivated>False</IsActivated>
     <Var>VAR5</Var>
     <Machine>Protec 0571EF3</Machine>
-    <Clause>{UCHV}=1</Clause>
+    <Clause>{ZA3AN}=1</Clause>
     <iClauseState>-1</iClauseState>
   </PrgrWork>
   <PrgrWork>
     <ProgrammID>Prgr-0</ProgrammID>
     <CycleID>B9</CycleID>
-    <IsActivated>False</IsActivated>
+    <IsActivated>True</IsActivated>
     <Var>VAR5</Var>
     <Machine>Protec 0571EF3</Machine>
-    <Clause>{UCHV}=1</Clause>
-    <iClauseState>-1</iClauseState>
+    <Clause />
+    <iClauseState>0</iClauseState>
   </PrgrWork>
   <PrgrWork>
     <ProgrammID>Prgr-0</ProgrammID>
@@ -544,11 +565,11 @@
   <PrgrWork>
     <ProgrammID>Prgr-0</ProgrammID>
     <CycleID>B13</CycleID>
-    <IsActivated>True</IsActivated>
+    <IsActivated>False</IsActivated>
     <Var>VAR5</Var>
     <Machine>Protec 0571EF3</Machine>
-    <Clause />
-    <iClauseState>0</iClauseState>
+    <Clause>{UCHK}=1</Clause>
+    <iClauseState>-1</iClauseState>
   </PrgrWork>
   <PrgrWork>
     <ProgrammID>Prgr-0</ProgrammID>
@@ -556,7 +577,7 @@
     <IsActivated>False</IsActivated>
     <Var>VAR5</Var>
     <Machine>Protec 0571EF3</Machine>
-    <Clause>{ZA3AN}=1</Clause>
+    <Clause>{UCHH}=1</Clause>
     <iClauseState>-1</iClauseState>
   </PrgrWork>
   <PrgrWork>
@@ -565,7 +586,7 @@
     <IsActivated>False</IsActivated>
     <Var>VAR5</Var>
     <Machine>Protec 0571EF3</Machine>
-    <Clause>{ZA3AN}=1</Clause>
+    <Clause>{UCHH}=1</Clause>
     <iClauseState>-1</iClauseState>
   </PrgrWork>
   <PrgrWork>
@@ -574,7 +595,7 @@
     <IsActivated>False</IsActivated>
     <Var>VAR5</Var>
     <Machine>Protec 0571EF3</Machine>
-    <Clause>{ZA3AN}=1</Clause>
+    <Clause>{UCHV}=1</Clause>
     <iClauseState>-1</iClauseState>
   </PrgrWork>
   <PrgrWork>
@@ -583,7 +604,7 @@
     <IsActivated>False</IsActivated>
     <Var>VAR5</Var>
     <Machine>Protec 0571EF3</Machine>
-    <Clause>{ZA3AN}=1</Clause>
+    <Clause>{UCHV}=1</Clause>
     <iClauseState>-1</iClauseState>
   </PrgrWork>
   <PrgrFileWork>
@@ -592,12 +613,12 @@
     <Ref>BL</Ref>
     <Typ>B</Typ>
     <X>22.5</X>
-    <Y>442</Y>
+    <Y>472</Y>
     <Z>0</Z>
     <Diameter>35</Diameter>
     <Depth>6.75</Depth>
     <Tool>T350</Tool>
-    <OldID>Bottom\BL\OBJ-2\B-1</OldID>
+    <OldID>Bottom\BL\OBJ-1\B-1</OldID>
     <KleiGeTei>6.75</KleiGeTei>
     <Clause />
     <iClauseState>0</iClauseState>
@@ -608,12 +629,12 @@
     <Ref>BL</Ref>
     <Typ>B</Typ>
     <X>22.5</X>
-    <Y>442</Y>
+    <Y>472</Y>
     <Z>0</Z>
     <Diameter>35</Diameter>
     <Depth>13.5</Depth>
     <Tool>T350</Tool>
-    <OldID>Bottom\BL\OBJ-2\B-1</OldID>
+    <OldID>Bottom\BL\OBJ-1\B-1</OldID>
     <KleiGeTei>6.75</KleiGeTei>
     <Clause />
     <iClauseState>0</iClauseState>
@@ -624,12 +645,12 @@
     <Ref>BL</Ref>
     <Typ>B</Typ>
     <X>32</X>
-    <Y>464.5</Y>
+    <Y>494.5</Y>
     <Z>0</Z>
     <Diameter>3</Diameter>
     <Depth>1</Depth>
     <Tool>T31</Tool>
-    <OldID>Bottom\BL\OBJ-2\B-2</OldID>
+    <OldID>Bottom\BL\OBJ-1\B-2</OldID>
     <KleiGeTei>1</KleiGeTei>
     <Clause />
     <iClauseState>0</iClauseState>
@@ -640,12 +661,12 @@
     <Ref>BL</Ref>
     <Typ>B</Typ>
     <X>32</X>
-    <Y>419.5</Y>
+    <Y>449.5</Y>
     <Z>0</Z>
     <Diameter>3</Diameter>
     <Depth>1</Depth>
     <Tool>T31</Tool>
-    <OldID>Bottom\BL\OBJ-2\B-3</OldID>
+    <OldID>Bottom\BL\OBJ-1\B-3</OldID>
     <KleiGeTei>1</KleiGeTei>
     <Clause />
     <iClauseState>0</iClauseState>
@@ -653,98 +674,82 @@
   <PrgrFileWork>
     <CntID>5</CntID>
     <Plane>Bottom</Plane>
-    <Ref>BR</Ref>
+    <Ref>BL</Ref>
     <Typ>B</Typ>
-    <X>583</X>
-    <Y>472</Y>
+    <X>22.5</X>
+    <Y>42</Y>
     <Z>0</Z>
-    <Diameter>5</Diameter>
-    <Depth>21</Depth>
-    <Tool>T50</Tool>
-    <OldID>Bottom\BR\B-6</OldID>
-    <KleiGeTei>21</KleiGeTei>
-    <Clause>{UCHK}=1</Clause>
+    <Diameter>35</Diameter>
+    <Depth>6.75</Depth>
+    <Tool>T350</Tool>
+    <OldID>Bottom\BL\OBJ-3\B-1</OldID>
+    <KleiGeTei>6.75</KleiGeTei>
+    <Clause>{ZA3AN}=1</Clause>
     <iClauseState>-1</iClauseState>
   </PrgrFileWork>
   <PrgrFileWork>
     <CntID>6</CntID>
     <Plane>Bottom</Plane>
-    <Ref>BR</Ref>
+    <Ref>BL</Ref>
     <Typ>B</Typ>
-    <X>583</X>
-    <Y>472</Y>
+    <X>22.5</X>
+    <Y>42</Y>
     <Z>0</Z>
-    <Diameter>5</Diameter>
-    <Depth>21</Depth>
-    <DblB>false</DblB>
-    <DblL>false</DblL>
-    <DblE>false</DblE>
-    <Tool>T50</Tool>
-    <ImageKey>BR</ImageKey>
-    <OldID>Bottom\BR\BR-4</OldID>
-    <KleiGeTei>21</KleiGeTei>
-    <Clause>{UCHH}=1</Clause>
+    <Diameter>35</Diameter>
+    <Depth>13.5</Depth>
+    <Tool>T350</Tool>
+    <OldID>Bottom\BL\OBJ-3\B-1</OldID>
+    <KleiGeTei>6.75</KleiGeTei>
+    <Clause>{ZA3AN}=1</Clause>
     <iClauseState>-1</iClauseState>
   </PrgrFileWork>
   <PrgrFileWork>
     <CntID>7</CntID>
     <Plane>Bottom</Plane>
-    <Ref>BR</Ref>
+    <Ref>BL</Ref>
     <Typ>B</Typ>
-    <X>455</X>
-    <Y>472</Y>
+    <X>32</X>
+    <Y>64.5</Y>
     <Z>0</Z>
-    <Diameter>5</Diameter>
-    <Depth>21</Depth>
-    <DblB>false</DblB>
-    <DblL>false</DblL>
-    <DblE>false</DblE>
-    <Tool>T50</Tool>
-    <ImageKey>BR</ImageKey>
-    <OldID>Bottom\BR\BR-4</OldID>
-    <KleiGeTei>21</KleiGeTei>
-    <Clause>{UCHH}=1</Clause>
+    <Diameter>3</Diameter>
+    <Depth>1</Depth>
+    <Tool>T31</Tool>
+    <OldID>Bottom\BL\OBJ-3\B-2</OldID>
+    <KleiGeTei>1</KleiGeTei>
+    <Clause>{ZA3AN}=1</Clause>
     <iClauseState>-1</iClauseState>
   </PrgrFileWork>
   <PrgrFileWork>
     <CntID>8</CntID>
     <Plane>Bottom</Plane>
-    <Ref>BR</Ref>
+    <Ref>BL</Ref>
     <Typ>B</Typ>
-    <X>583</X>
-    <Y>472</Y>
+    <X>32</X>
+    <Y>19.5</Y>
     <Z>0</Z>
-    <Diameter>5</Diameter>
-    <Depth>21</Depth>
-    <DblB>false</DblB>
-    <DblL>false</DblL>
-    <DblE>false</DblE>
-    <Tool>T50</Tool>
-    <ImageKey>BR</ImageKey>
-    <OldID>Bottom\BR\BR-5</OldID>
-    <KleiGeTei>21</KleiGeTei>
-    <Clause>{UCHV}=1</Clause>
+    <Diameter>3</Diameter>
+    <Depth>1</Depth>
+    <Tool>T31</Tool>
+    <OldID>Bottom\BL\OBJ-3\B-3</OldID>
+    <KleiGeTei>1</KleiGeTei>
+    <Clause>{ZA3AN}=1</Clause>
     <iClauseState>-1</iClauseState>
   </PrgrFileWork>
   <PrgrFileWork>
     <CntID>9</CntID>
     <Plane>Bottom</Plane>
-    <Ref>BR</Ref>
+    <Ref>TL</Ref>
     <Typ>B</Typ>
-    <X>583</X>
-    <Y>344</Y>
+    <X>22.5</X>
+    <Y>80</Y>
     <Z>0</Z>
-    <Diameter>5</Diameter>
-    <Depth>21</Depth>
-    <DblB>false</DblB>
-    <DblL>false</DblL>
-    <DblE>false</DblE>
-    <Tool>T50</Tool>
-    <ImageKey>BR</ImageKey>
-    <OldID>Bottom\BR\BR-5</OldID>
-    <KleiGeTei>21</KleiGeTei>
-    <Clause>{UCHV}=1</Clause>
-    <iClauseState>-1</iClauseState>
+    <Diameter>35</Diameter>
+    <Depth>6.75</Depth>
+    <Tool>T350</Tool>
+    <OldID>Bottom\TL\OBJ-2\B-1</OldID>
+    <KleiGeTei>6.75</KleiGeTei>
+    <Clause />
+    <iClauseState>0</iClauseState>
   </PrgrFileWork>
   <PrgrFileWork>
     <CntID>10</CntID>
@@ -755,9 +760,9 @@
     <Y>80</Y>
     <Z>0</Z>
     <Diameter>35</Diameter>
-    <Depth>6.75</Depth>
+    <Depth>13.5</Depth>
     <Tool>T350</Tool>
-    <OldID>Bottom\TL\OBJ-1\B-1</OldID>
+    <OldID>Bottom\TL\OBJ-2\B-1</OldID>
     <KleiGeTei>6.75</KleiGeTei>
     <Clause />
     <iClauseState>0</iClauseState>
@@ -767,14 +772,14 @@
     <Plane>Bottom</Plane>
     <Ref>TL</Ref>
     <Typ>B</Typ>
-    <X>22.5</X>
-    <Y>80</Y>
+    <X>32</X>
+    <Y>57.5</Y>
     <Z>0</Z>
-    <Diameter>35</Diameter>
-    <Depth>13.5</Depth>
-    <Tool>T350</Tool>
-    <OldID>Bottom\TL\OBJ-1\B-1</OldID>
-    <KleiGeTei>6.75</KleiGeTei>
+    <Diameter>3</Diameter>
+    <Depth>1</Depth>
+    <Tool>T31</Tool>
+    <OldID>Bottom\TL\OBJ-2\B-2</OldID>
+    <KleiGeTei>1</KleiGeTei>
     <Clause />
     <iClauseState>0</iClauseState>
   </PrgrFileWork>
@@ -784,12 +789,12 @@
     <Ref>TL</Ref>
     <Typ>B</Typ>
     <X>32</X>
-    <Y>57.5</Y>
+    <Y>102.5</Y>
     <Z>0</Z>
     <Diameter>3</Diameter>
     <Depth>1</Depth>
     <Tool>T31</Tool>
-    <OldID>Bottom\TL\OBJ-1\B-2</OldID>
+    <OldID>Bottom\TL\OBJ-2\B-3</OldID>
     <KleiGeTei>1</KleiGeTei>
     <Clause />
     <iClauseState>0</iClauseState>
@@ -797,87 +802,103 @@
   <PrgrFileWork>
     <CntID>13</CntID>
     <Plane>Bottom</Plane>
-    <Ref>TL</Ref>
+    <Ref>TR</Ref>
     <Typ>B</Typ>
-    <X>32</X>
-    <Y>102.5</Y>
+    <X>583</X>
+    <Y>50</Y>
     <Z>0</Z>
-    <Diameter>3</Diameter>
-    <Depth>1</Depth>
-    <Tool>T31</Tool>
-    <OldID>Bottom\TL\OBJ-1\B-3</OldID>
-    <KleiGeTei>1</KleiGeTei>
-    <Clause />
-    <iClauseState>0</iClauseState>
+    <Diameter>5</Diameter>
+    <Depth>21</Depth>
+    <Tool>T50</Tool>
+    <OldID>Bottom\TR\B-6</OldID>
+    <KleiGeTei>21</KleiGeTei>
+    <Clause>{UCHK}=1</Clause>
+    <iClauseState>-1</iClauseState>
   </PrgrFileWork>
   <PrgrFileWork>
     <CntID>14</CntID>
     <Plane>Bottom</Plane>
-    <Ref>TL</Ref>
+    <Ref>TR</Ref>
     <Typ>B</Typ>
-    <X>22.5</X>
-    <Y>510</Y>
+    <X>583</X>
+    <Y>50</Y>
     <Z>0</Z>
-    <Diameter>35</Diameter>
-    <Depth>6.75</Depth>
-    <Tool>T350</Tool>
-    <OldID>Bottom\TL\OBJ-3\B-1</OldID>
-    <KleiGeTei>6.75</KleiGeTei>
-    <Clause>{ZA3AN}=1</Clause>
+    <Diameter>5</Diameter>
+    <Depth>21</Depth>
+    <DblB>false</DblB>
+    <DblL>false</DblL>
+    <DblE>false</DblE>
+    <Tool>T50</Tool>
+    <ImageKey>BR</ImageKey>
+    <OldID>Bottom\TR\BR-4</OldID>
+    <KleiGeTei>21</KleiGeTei>
+    <Clause>{UCHH}=1</Clause>
     <iClauseState>-1</iClauseState>
   </PrgrFileWork>
   <PrgrFileWork>
     <CntID>15</CntID>
     <Plane>Bottom</Plane>
-    <Ref>TL</Ref>
+    <Ref>TR</Ref>
     <Typ>B</Typ>
-    <X>22.5</X>
-    <Y>510</Y>
+    <X>455</X>
+    <Y>50</Y>
     <Z>0</Z>
-    <Diameter>35</Diameter>
-    <Depth>13.5</Depth>
-    <Tool>T350</Tool>
-    <OldID>Bottom\TL\OBJ-3\B-1</OldID>
-    <KleiGeTei>6.75</KleiGeTei>
-    <Clause>{ZA3AN}=1</Clause>
+    <Diameter>5</Diameter>
+    <Depth>21</Depth>
+    <DblB>false</DblB>
+    <DblL>false</DblL>
+    <DblE>false</DblE>
+    <Tool>T50</Tool>
+    <ImageKey>BR</ImageKey>
+    <OldID>Bottom\TR\BR-4</OldID>
+    <KleiGeTei>21</KleiGeTei>
+    <Clause>{UCHH}=1</Clause>
     <iClauseState>-1</iClauseState>
   </PrgrFileWork>
   <PrgrFileWork>
     <CntID>16</CntID>
     <Plane>Bottom</Plane>
-    <Ref>TL</Ref>
+    <Ref>TR</Ref>
     <Typ>B</Typ>
-    <X>32</X>
-    <Y>487.5</Y>
+    <X>583</X>
+    <Y>50</Y>
     <Z>0</Z>
-    <Diameter>3</Diameter>
-    <Depth>1</Depth>
-    <Tool>T31</Tool>
-    <OldID>Bottom\TL\OBJ-3\B-2</OldID>
-    <KleiGeTei>1</KleiGeTei>
-    <Clause>{ZA3AN}=1</Clause>
+    <Diameter>5</Diameter>
+    <Depth>21</Depth>
+    <DblB>false</DblB>
+    <DblL>false</DblL>
+    <DblE>false</DblE>
+    <Tool>T50</Tool>
+    <ImageKey>BR</ImageKey>
+    <OldID>Bottom\TR\BR-5</OldID>
+    <KleiGeTei>21</KleiGeTei>
+    <Clause>{UCHV}=1</Clause>
     <iClauseState>-1</iClauseState>
   </PrgrFileWork>
   <PrgrFileWork>
     <CntID>17</CntID>
     <Plane>Bottom</Plane>
-    <Ref>TL</Ref>
+    <Ref>TR</Ref>
     <Typ>B</Typ>
-    <X>32</X>
-    <Y>532.5</Y>
+    <X>583</X>
+    <Y>178</Y>
     <Z>0</Z>
-    <Diameter>3</Diameter>
-    <Depth>1</Depth>
-    <Tool>T31</Tool>
-    <OldID>Bottom\TL\OBJ-3\B-3</OldID>
-    <KleiGeTei>1</KleiGeTei>
-    <Clause>{ZA3AN}=1</Clause>
+    <Diameter>5</Diameter>
+    <Depth>21</Depth>
+    <DblB>false</DblB>
+    <DblL>false</DblL>
+    <DblE>false</DblE>
+    <Tool>T50</Tool>
+    <ImageKey>BR</ImageKey>
+    <OldID>Bottom\TR\BR-5</OldID>
+    <KleiGeTei>21</KleiGeTei>
+    <Clause>{UCHV}=1</Clause>
     <iClauseState>-1</iClauseState>
   </PrgrFileWork>
   <PrgrFile>
     <DELMARK>OK</DELMARK>
     <CntID>1</CntID>
-    <ID>Bottom\TL\OBJ-1</ID>
+    <ID>Bottom\BL\OBJ-1</ID>
     <RefVal1>{ZAV1Y}</RefVal1>
     <RefVal2>0</RefVal2>
     <DoDbl>false</DoDbl>
@@ -900,7 +921,7 @@
   <PrgrFile>
     <DELMARK>OK</DELMARK>
     <CntID>2</CntID>
-    <ID>Bottom\BL\OBJ-2</ID>
+    <ID>Bottom\TL\OBJ-2</ID>
     <RefVal1>{ZAV2Y}</RefVal1>
     <RefVal2>0</RefVal2>
     <DoDbl>false</DoDbl>
@@ -922,7 +943,7 @@
   </PrgrFile>
   <PrgrFile>
     <CntID>3</CntID>
-    <ID>Bottom\TL\OBJ-3</ID>
+    <ID>Bottom\BL\OBJ-3</ID>
     <RefVal1>{ZAV1Y}+{ZAV3Y}</RefVal1>
     <RefVal2>0</RefVal2>
     <DoDbl>false</DoDbl>
@@ -944,7 +965,7 @@
   </PrgrFile>
   <PrgrFile>
     <CntID>4</CntID>
-    <ID>Bottom\BR\BR-4</ID>
+    <ID>Bottom\TR\BR-4</ID>
     <RefVal1>{UCHY}</RefVal1>
     <RefVal2>{UCHX}</RefVal2>
     <RefLVL>0</RefLVL>
@@ -971,7 +992,7 @@
   </PrgrFile>
   <PrgrFile>
     <CntID>5</CntID>
-    <ID>Bottom\BR\BR-5</ID>
+    <ID>Bottom\TR\BR-5</ID>
     <RefVal1>{UCHY}</RefVal1>
     <RefVal2>{UCHX}</RefVal2>
     <RefLVL>0</RefLVL>
@@ -998,7 +1019,7 @@
   </PrgrFile>
   <PrgrFile>
     <CntID>6</CntID>
-    <ID>Bottom\BR\B-6</ID>
+    <ID>Bottom\TR\B-6</ID>
     <RefVal1>{UCHY}</RefVal1>
     <RefVal2>{UCHX}</RefVal2>
     <RefLVL>0</RefLVL>
