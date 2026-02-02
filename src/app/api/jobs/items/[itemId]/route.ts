@@ -13,8 +13,29 @@ export async function PUT(
         const itemId = params.itemId;
         const body = await request.json();
 
-        // Použijeme komplexnú update funkciu zo servisu
-        await updateJobItem(itemId, body);
+        // Parsovanie a validácia quantity (evidencia: celé číslo >= 1)
+        let quantity: number | undefined;
+        if (body.quantity !== undefined) {
+            const q = Math.floor(Number(body.quantity));
+            if (!Number.isFinite(q) || q < 1) {
+                return NextResponse.json(
+                    { error: "Množstvo musí byť aspoň 1" },
+                    { status: 400 }
+                );
+            }
+            quantity = q;
+        }
+
+        const updateData: Parameters<typeof updateJobItem>[1] = {
+            name: body.name,
+            width: body.width,
+            height: body.height,
+            depth: body.depth,
+            parameters: body.parameters,
+        };
+        if (quantity !== undefined) updateData.quantity = quantity;
+
+        await updateJobItem(itemId, updateData);
 
         return NextResponse.json({ success: true });
     } catch (error) {

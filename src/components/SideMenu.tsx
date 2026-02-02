@@ -38,10 +38,15 @@ export function SideMenu() {
     return (
         <aside className="flex h-full w-64 flex-col bg-slate-900 text-white">
             {/* Logo / Header */}
-            <div className="flex h-16 items-center justify-center border-b border-slate-700">
-                <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-                    Gannomat ProTec
-                </h1>
+            <div className="flex h-16 items-center border-b border-slate-800 bg-slate-900/80 px-4 backdrop-blur-sm">
+                <div className="mr-3 flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400 text-sm font-extrabold text-slate-900 shadow-sm">
+                    GP
+                </div>
+                <div className="flex flex-col leading-tight">
+                    <span className="text-sm font-semibold tracking-wide text-slate-100">
+                        Gannomat ProTec
+                    </span>
+                </div>
             </div>
 
             {/* Navigation */}

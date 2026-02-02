@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { AddCabinetDialog } from "@/components/AddCabinetDialog";
+import { AddCabinetDialog, type AddCabinetPayload } from "@/components/AddCabinetDialog";
 import { Package, Plus, AlertCircle, CheckCircle, Clock } from "lucide-react";
 import Link from "next/link";
 
@@ -60,16 +60,21 @@ export function JobDetailClient({ initialJob }: JobDetailClientProps) {
         }
     }, [job]); // Re-run when job state changes
 
-    const handleAddCabinet = async (cabinetId: string) => {
+    const handleAddCabinet = async (payload: AddCabinetPayload) => {
         try {
             const res = await fetch(`/api/jobs/${job.id}/items`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ cabinetId }),
+                body: JSON.stringify({
+                    cabinetId: payload.cabinetId,
+                    width: payload.width,
+                    height: payload.height,
+                    depth: payload.depth,
+                    quantity: payload.quantity,
+                }),
             });
 
             if (res.ok) {
-                // Refresh job data
                 refreshJob();
             }
         } catch (err) {
@@ -130,10 +135,12 @@ export function JobDetailClient({ initialJob }: JobDetailClientProps) {
                                     <h3 className="font-semibold text-slate-900">
                                         {item.name}
                                     </h3>
-                                    <div className="text-sm text-slate-500 flex gap-2">
+                                    <div className="text-sm text-slate-500 flex gap-2 flex-wrap">
                                         <span>{item.cabinet.name}</span>
                                         <span>•</span>
                                         <span>{item.width} x {item.height} x {item.depth} mm</span>
+                                        <span>•</span>
+                                        <span>Množstvo: {item.quantity} ks</span>
                                     </div>
                                 </div>
                             </div>

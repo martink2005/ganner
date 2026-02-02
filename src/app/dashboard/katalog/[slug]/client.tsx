@@ -20,24 +20,24 @@ import { FileCode, Settings2, Eye, LayoutTemplate } from "lucide-react";
 import { getGanxFileDetail, GanxFileDetail } from "./actions";
 import { PartPreview } from "@/components/catalog/part-preview";
 
-// Definície typov namiesto importu z @prisma/client
+// Definície typov zhodné s Prisma CabinetFile (bez updatedAt)
 interface File {
     id: string;
     filename: string;
     relativePath: string;
-    hash: string;
+    hash: string | null;
     cabinetId: string;
     createdAt: Date;
-    updatedAt: Date;
 }
 
 interface Parameter {
     id: string;
     paramName: string;
-    label: string | null;
+    label: string;
     paramType: string;
+    unit: string | null;
     defaultValue: string | null;
-    sortId: number;
+    sortId: number | null;
     cabinetId: string;
 }
 
@@ -146,27 +146,33 @@ export function CabinetDetailClient({ cabinet }: CabinetDetailClientProps) {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-2 max-h-96 overflow-y-auto">
-                            {cabinet.parameters.map((param) => (
-                                <div
-                                    key={param.id}
-                                    className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
-                                >
-                                    <div>
-                                        <p className="font-medium text-slate-900">
-                                            {param.paramName}
-                                        </p>
-                                        <p className="text-sm text-slate-500">{param.label}</p>
+                            {cabinet.parameters.map((param) => {
+                                const displayLabel = (param.label && param.label.trim() !== "") ? param.label : param.paramName;
+                                return (
+                                    <div
+                                        key={param.id}
+                                        className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
+                                    >
+                                        <div>
+                                            <p className="font-medium text-slate-900">
+                                                {displayLabel}
+                                            </p>
+                                            {(param.label && param.label.trim() !== "") && (
+                                                <p className="text-xs text-slate-500">{param.paramName}</p>
+                                            )}
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="font-mono text-sm text-slate-700">
+                                                {param.defaultValue}
+                                                {param.unit && <span className="text-slate-500 ml-1">{param.unit}</span>}
+                                            </p>
+                                            <p className="text-xs text-slate-400">
+                                                {param.paramType}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className="text-right">
-                                        <p className="font-mono text-sm text-slate-700">
-                                            {param.defaultValue}
-                                        </p>
-                                        <p className="text-xs text-slate-400">
-                                            {param.paramType}
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </CardContent>
                 </Card>

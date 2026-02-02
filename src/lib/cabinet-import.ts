@@ -14,6 +14,7 @@ import {
     inferParameterType,
     GanxParameter,
 } from "@/lib/ganx-parser";
+import { isPerPartParam } from "@/lib/job-service";
 
 /**
  * Výsledok importu skrinky
@@ -161,9 +162,9 @@ export async function importCabinet(
                 /^[XYZ]_C_[XYZ]$/.test(p.paramName)
             ).length;
 
-            if (coordParamCount < 2) {
+            if (coordParamCount !== 2) {
                 issues.push(
-                    `chýbajú parametre v tvare X_C_Y (kde X/Y/Z). Potrebné sú aspoň 2, našiel som ${coordParamCount}. Príklad: X_C_Y, Y_C_X.`
+                    `parametre v tvare X_C_Y (kde X/Y/Z) musia byť presne 2, našiel som ${coordParamCount}. Príklad: X_C_Y, Y_C_X.`
                 );
             }
 
@@ -198,11 +199,13 @@ export async function importCabinet(
             };
         }
 
-        // 5. Deduplikuj parametre
+        // 5. Deduplikuj parametre (bez EXCLUDED a bez per-dielcových: *_C_*, HRUB)
         const uniqueParameters = deduplicateParameters(allParameters);
         const EXCLUDED_PARAMS = new Set(["CLX", "CLY", "CLZ", "LX", "LY", "LZ"]);
         const dbParameters = uniqueParameters.filter(
-            (param) => !EXCLUDED_PARAMS.has(param.paramName)
+            (param) =>
+                !EXCLUDED_PARAMS.has(param.paramName) &&
+                !isPerPartParam(param.paramName)
         );
 
         // 6. Vytvor priečinok v katalógu
@@ -210,7 +213,7 @@ export async function importCabinet(
         await fs.mkdir(catalogPath, { recursive: true });
 
         // 7. Skopíruj súbory do katalógu
-        for (const [filename, content] of fileContents) {
+        for (const [filename, content] of Array.from(fileContents.entries())) {
             const destPath = path.join(catalogPath, filename);
             await fs.writeFile(destPath, content, "utf-8");
         }

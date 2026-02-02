@@ -34,6 +34,8 @@ export interface GanxFile {
     parameters: GanxParameter[];
 }
 
+type GanxAxis = "X" | "Y" | "Z";
+
 /**
  * Pomocná funkcia na extrakciu textu z XML elementu
  */
@@ -61,9 +63,55 @@ function extractElementText(
 export function parseNumber(value: string): number {
     if (!value) return 0;
     // Nahradí čiarku bodkou pre parseFloat
-    const normalized = value.replace(",", ".");
+    const normalized = value.replaceAll(",", ".");
     const num = parseFloat(normalized);
     return isNaN(num) ? 0 : num;
+}
+
+/**
+ * Načíta parameter podľa ParamName
+ */
+export function getParameterByName(
+    parameters: GanxParameter[],
+    paramName: string
+): GanxParameter | undefined {
+    return parameters.find((p) => p.paramName === paramName);
+}
+
+function formatWsNumber(value: number): string {
+    // V <PrgrSet> sa v praxi používajú bodky ako desatinný oddeľovač (napr. 559.5)
+    if (!Number.isFinite(value)) return "0";
+    return Number.isInteger(value) ? String(value) : String(value);
+}
+
+/**
+ * Aktualizuje hodnoty <wsX>, <wsY>, <wsZ> v rámci <PrgrSet>
+ *
+ * Fail-safe: ak chýba <PrgrSet> alebo konkrétny tag, vráti pôvodný obsah
+ */
+export function updateGanxPrgrSet(
+    xmlContent: string,
+    updates: Partial<Record<`ws${GanxAxis}`, number>>
+): string {
+    const prgrSetMatch = xmlContent.match(/<PrgrSet>([\s\S]*?)<\/PrgrSet>/);
+    if (!prgrSetMatch) return xmlContent;
+
+    let prgrSetInner = prgrSetMatch[1];
+
+    const replaceTag = (tag: `ws${GanxAxis}`, value: number) => {
+        const tagRegex = new RegExp(`(<${tag}>)([\\s\\S]*?)(<\\/${tag}>)`);
+        if (!tagRegex.test(prgrSetInner)) return;
+        prgrSetInner = prgrSetInner.replace(
+            tagRegex,
+            `$1${formatWsNumber(value)}$3`
+        );
+    };
+
+    if (updates.wsX !== undefined) replaceTag("wsX", updates.wsX);
+    if (updates.wsY !== undefined) replaceTag("wsY", updates.wsY);
+    if (updates.wsZ !== undefined) replaceTag("wsZ", updates.wsZ);
+
+    return xmlContent.replace(prgrSetMatch[0], `<PrgrSet>${prgrSetInner}</PrgrSet>`);
 }
 
 /**

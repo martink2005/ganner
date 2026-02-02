@@ -119,7 +119,7 @@ describe("Cabinet Import Service", () => {
             expect(result.success).toBe(false);
             expect(result.errors.join(" ")).toContain("bad.ganx");
             expect(result.errors.join(" ")).toContain("X_C_Y");
-            expect(result.errors.join(" ")).toContain("aspoň 2");
+            expect(result.errors.join(" ")).toContain("presne 2");
             expect(mockPrisma.cabinet.create).not.toHaveBeenCalled();
             expect(fs.mkdir).not.toHaveBeenCalled();
             expect(fs.writeFile).not.toHaveBeenCalled();
@@ -189,7 +189,7 @@ describe("Cabinet Import Service", () => {
                 name: "path",
                 slug: "path",
                 files: ["test.ganx"],
-                parameters: ["X_C_Y", "Y_C_X", "HRUB"],
+                parameters: [],
             });
 
             const result = await importCabinet("./some/path");
@@ -200,9 +200,9 @@ describe("Cabinet Import Service", () => {
             const createdParams = createArgs?.data?.parameters?.create ?? [];
             const createdNames = createdParams.map((p: any) => p.paramName);
 
-            expect(createdNames).toContain("X_C_Y");
-            expect(createdNames).toContain("Y_C_X");
-            expect(createdNames).toContain("HRUB");
+            expect(createdNames).not.toContain("X_C_Y");
+            expect(createdNames).not.toContain("Y_C_X");
+            expect(createdNames).not.toContain("HRUB");
 
             expect(createdNames).not.toContain("LX");
             expect(createdNames).not.toContain("LY");

@@ -20,12 +20,14 @@ interface JobItem {
     width: number | null;
     height: number | null;
     depth: number | null;
+    quantity: number;
     outputStatus: string;
     cabinet: {
         name: string;
         parameters: {
             paramName: string;
             label: string;
+            unit?: string | null;
         }[];
     };
     parameterValues: ParameterValue[];
@@ -40,12 +42,14 @@ export function ItemDetailClient({ initialItem, jobId }: ItemDetailClientProps) 
     const router = useRouter();
     const [item, setItem] = useState(initialItem);
     const [loading, setLoading] = useState(false);
+    const [saveError, setSaveError] = useState<string | null>(null);
 
     // State pre základné údaje
     const [name, setName] = useState(item.name);
     const [width, setWidth] = useState(item.width?.toString() || "");
     const [height, setHeight] = useState(item.height?.toString() || "");
     const [depth, setDepth] = useState(item.depth?.toString() || "");
+    const [quantity, setQuantity] = useState(String(item.quantity ?? 1));
 
     // State pre parametre (mapa pre rýchly prístup)
     const [params, setParams] = useState<Record<string, string>>(() => {
@@ -64,6 +68,12 @@ export function ItemDetailClient({ initialItem, jobId }: ItemDetailClientProps) 
     };
 
     const handleSave = async () => {
+        setSaveError(null);
+        const qtyNum = Math.floor(Number(quantity));
+        if (!Number.isFinite(qtyNum) || qtyNum < 1) {
+            setSaveError("Množstvo musí byť aspoň 1 ks");
+            return;
+        }
         setLoading(true);
         try {
             const response = await fetch(`/api/jobs/items/${item.id}`, {
@@ -74,6 +84,7 @@ export function ItemDetailClient({ initialItem, jobId }: ItemDetailClientProps) 
                     width: parseFloat(width) || null,
                     height: parseFloat(height) || null,
                     depth: parseFloat(depth) || null,
+                    quantity: qtyNum,
                     parameters: params
                 })
             });
@@ -81,9 +92,13 @@ export function ItemDetailClient({ initialItem, jobId }: ItemDetailClientProps) 
             if (response.ok) {
                 router.push(`/dashboard/zakazky/${jobId}`);
                 router.refresh();
+            } else {
+                const data = await response.json().catch(() => ({}));
+                setSaveError(data.error ?? "Nepodarilo sa uložiť");
             }
         } catch (error) {
             console.error("Failed to save item", error);
+            setSaveError("Nastala chyba pri ukladaní");
         } finally {
             setLoading(false);
         }
@@ -152,6 +167,21 @@ export function ItemDetailClient({ initialItem, jobId }: ItemDetailClientProps) 
                                 />
                             </div>
                         </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="quantity">Množstvo</Label>
+                            <Input
+                                id="quantity"
+                                type="number"
+                                min={1}
+                                step={1}
+                                value={quantity}
+                                onChange={e => setQuantity(e.target.value)}
+                            />
+                            <p className="text-xs text-slate-500">
+                                Evidencia počtu kusov (min. 1)
+                            </p>
+                        </div>
                     </div>
                 </div>
 
@@ -159,27 +189,35 @@ export function ItemDetailClient({ initialItem, jobId }: ItemDetailClientProps) 
                 <div className="lg:col-span-2 space-y-6">
                     <div className="bg-white p-6 rounded-lg border shadow-sm space-y-4">
                         <h3 className="font-semibold text-lg">Technické parametre</h3>
+                        <p className="text-xs text-slate-500">
+                            Offset (X_C_Y, Y_C_X) a hrubka (HRUB) sú špecifické pre každý dielec a čítajú sa z .ganx súborov; tu nie sú editovateľné.
+                        </p>
                         <Separator />
                         <div className="grid gap-4 sm:grid-cols-2">
                             {item.parameterValues.map((p) => {
-                                // Nájdi definíciu parametra v skrinke
                                 const def = item.cabinet.parameters?.find(d => d.paramName === p.paramName);
+                                const hasNote = def?.label && def.label.trim() !== "";
                                 return (
                                     <div key={p.paramName} className="space-y-2">
-                                        <Label htmlFor={p.paramName} className="flex items-center gap-2">
-                                            {p.paramName}
-                                            {def?.label && (
-                                                <span className="text-xs font-normal text-slate-500">
-                                                    - {def.label}
+                                        <Label htmlFor={p.paramName} className="block">
+                                            <span className="font-medium text-slate-900">{p.paramName}</span>
+                                            {hasNote && (
+                                                <span className="ml-2 text-xs font-normal text-slate-500">
+                                                    {def.label}
                                                 </span>
                                             )}
                                         </Label>
-                                        <Input
-                                            id={p.paramName}
-                                            value={params[p.paramName] || ""}
-                                            onChange={e => handleParamChange(p.paramName, e.target.value)}
-                                            className="font-mono"
-                                        />
+                                        <div className="flex items-center gap-2">
+                                            <Input
+                                                id={p.paramName}
+                                                value={params[p.paramName] || ""}
+                                                onChange={e => handleParamChange(p.paramName, e.target.value)}
+                                                className="font-mono"
+                                            />
+                                            {def?.unit && (
+                                                <span className="text-sm text-slate-500 shrink-0">{def.unit}</span>
+                                            )}
+                                        </div>
                                     </div>
                                 );
                             })}
@@ -187,6 +225,13 @@ export function ItemDetailClient({ initialItem, jobId }: ItemDetailClientProps) 
                     </div>
                 </div>
             </div>
+
+            {saveError && (
+                <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg">
+                    <AlertCircle className="h-4 w-4 shrink-0" />
+                    {saveError}
+                </div>
+            )}
 
             <div className="fixed bottom-0 right-0 left-0 lg:left-64 p-4 bg-white border-t flex justify-end gap-2 z-40">
                 <Link href={`/dashboard/zakazky/${jobId}`}>

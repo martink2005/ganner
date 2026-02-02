@@ -241,14 +241,14 @@
     <ParamName>X_C_Y</ParamName>
     <Value>0</Value>
     <Description>Súradnicový parameter (validácia importu)</Description>
-    <ParamValue>0</ParamValue>
+    <ParamValue>10</ParamValue>
     <SortID>1040</SortID>
   </ParameterListe>
   <ParameterListe>
     <ParamName>Y_C_X</ParamName>
     <Value>0</Value>
     <Description>Súradnicový parameter (validácia importu)</Description>
-    <ParamValue>0</ParamValue>
+    <ParamValue>25</ParamValue>
     <SortID>1041</SortID>
   </ParameterListe>
   <ParameterListe>
