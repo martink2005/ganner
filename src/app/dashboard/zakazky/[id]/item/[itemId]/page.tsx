@@ -13,7 +13,15 @@ export default async function ItemDetailPage({ params }: Props) {
     const item = await prisma.jobItem.findUnique({
         where: { id: itemId },
         include: {
-            cabinet: { include: { parameters: true } },
+            cabinet: {
+                include: {
+                    parameters: {
+                        orderBy: [{ groupId: "asc" }, { sortId: "asc" }],
+                        include: { group: true },
+                    },
+                    parameterGroups: { orderBy: { sortOrder: "asc" } },
+                },
+            },
             parameterValues: true,
         },
     });

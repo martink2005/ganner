@@ -308,7 +308,11 @@ export async function getCabinetDetail(slug: string) {
                 orderBy: { filename: "asc" },
             },
             parameters: {
-                orderBy: { sortId: "asc" },
+                orderBy: [{ groupId: "asc" }, { sortId: "asc" }],
+                include: { group: true },
+            },
+            parameterGroups: {
+                orderBy: { sortOrder: "asc" },
             },
         },
     });

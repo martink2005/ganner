@@ -2,11 +2,16 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { BookOpen, ClipboardList, FileText, LogOut } from "lucide-react";
+import { BookOpen, ClipboardList, FileText, LayoutDashboard, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const menuItems = [
+    {
+        href: "/dashboard",
+        label: "Dashboard",
+        icon: LayoutDashboard,
+    },
     {
         href: "/dashboard/katalog",
         label: "Katalóg",
@@ -57,7 +62,10 @@ export function SideMenu() {
             {/* Navigation */}
             <nav className="flex-1 space-y-1 p-4">
                 {menuItems.map((item) => {
-                    const isActive = pathname.startsWith(item.href);
+                    const isActive =
+                        item.href === "/dashboard"
+                            ? pathname === "/dashboard"
+                            : pathname.startsWith(item.href);
                     const Icon = item.icon;
 
                     return (

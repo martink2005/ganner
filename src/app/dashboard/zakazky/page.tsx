@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Plus, Briefcase, Calendar, ChevronRight } from "lucide-react";
+import { Plus, Briefcase, Calendar, Pencil, Trash2 } from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -33,6 +33,20 @@ export default function ZakazkyPage() {
     const [newJobName, setNewJobName] = useState("");
     const [newJobDesc, setNewJobDesc] = useState("");
     const [creating, setCreating] = useState(false);
+    const [deleteDialog, setDeleteDialog] = useState<{
+        open: boolean;
+        job: Job | null;
+        loading: boolean;
+        error: string | null;
+    }>({ open: false, job: null, loading: false, error: null });
+    const [editDialog, setEditDialog] = useState<{
+        open: boolean;
+        job: Job | null;
+        name: string;
+        description: string;
+        loading: boolean;
+        error: string | null;
+    }>({ open: false, job: null, name: "", description: "", loading: false, error: null });
 
     useEffect(() => {
         fetchJobs();
@@ -79,6 +93,91 @@ export default function ZakazkyPage() {
         }
     };
 
+    const handleDeleteClick = (e: React.MouseEvent, job: Job) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDeleteDialog({ open: true, job, loading: false, error: null });
+    };
+
+    const handleDeleteConfirm = async () => {
+        if (!deleteDialog.job) return;
+        setDeleteDialog((d) => ({ ...d, loading: true, error: null }));
+        try {
+            const res = await fetch(`/api/jobs/${deleteDialog.job.id}`, {
+                method: "DELETE",
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                setDeleteDialog((d) => ({
+                    ...d,
+                    loading: false,
+                    error: data.error || "Chyba pri mazaní",
+                }));
+                return;
+            }
+            setDeleteDialog({ open: false, job: null, loading: false, error: null });
+            fetchJobs();
+        } catch (err) {
+            setDeleteDialog((d) => ({
+                ...d,
+                loading: false,
+                error: err instanceof Error ? err.message : "Neznáma chyba",
+            }));
+        }
+    };
+
+    const handleEditClick = (e: React.MouseEvent, job: Job) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setEditDialog({
+            open: true,
+            job,
+            name: job.name,
+            description: job.description || "",
+            loading: false,
+            error: null,
+        });
+    };
+
+    const handleEditSave = async () => {
+        if (!editDialog.job || !editDialog.name.trim()) return;
+        setEditDialog((d) => ({ ...d, loading: true, error: null }));
+        try {
+            const res = await fetch(`/api/jobs/${editDialog.job.id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: editDialog.name.trim(),
+                    description: editDialog.description,
+                }),
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                setEditDialog((d) => ({
+                    ...d,
+                    loading: false,
+                    error: data.error || "Chyba pri úprave",
+                }));
+                return;
+            }
+            setEditDialog({
+                open: false,
+                job: null,
+                name: "",
+                description: "",
+                loading: false,
+                error: null,
+            });
+            fetchJobs();
+        } catch (err) {
+            setEditDialog((d) => ({
+                ...d,
+                loading: false,
+                error: err instanceof Error ? err.message : "Neznáma chyba",
+            }));
+        }
+    };
+
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -113,32 +212,53 @@ export default function ZakazkyPage() {
             ) : (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {jobs.map((job) => (
-                        <Link
+                        <div
                             key={job.id}
-                            href={`/dashboard/zakazky/${job.id}`}
-                            className="group rounded-lg border bg-white p-6 shadow-sm transition-all hover:border-blue-300 hover:shadow-md"
+                            className="group relative rounded-lg border bg-white p-6 shadow-sm transition-all hover:border-blue-300 hover:shadow-md"
                         >
-                            <div className="flex items-start justify-between">
+                            <Link
+                                href={`/dashboard/zakazky/${job.id}`}
+                                className="block pr-20"
+                            >
                                 <div>
                                     <h3 className="font-semibold text-slate-900">{job.name}</h3>
                                     <p className="text-sm text-slate-500 line-clamp-2 mt-1">
                                         {job.description || "Bez popisu"}
                                     </p>
                                 </div>
-                                <ChevronRight className="h-5 w-5 text-slate-400 transition-transform group-hover:translate-x-1" />
-                            </div>
 
-                            <div className="mt-4 flex items-center justify-between text-sm text-slate-600">
-                                <div className="flex items-center gap-1">
-                                    <Briefcase className="h-4 w-4" />
-                                    <span>{job._count.items} položiek</span>
+                                <div className="mt-4 flex items-center gap-4 text-sm text-slate-600">
+                                    <div className="flex items-center gap-1">
+                                        <Briefcase className="h-4 w-4" />
+                                        <span>{job._count.items} položiek</span>
+                                    </div>
+                                    <div className="flex items-center gap-1 text-slate-400">
+                                        <Calendar className="h-3 w-3" />
+                                        <span>{new Date(job.updatedAt).toLocaleDateString("sk-SK")}</span>
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-1 text-slate-400">
-                                    <Calendar className="h-3 w-3" />
-                                    <span>{new Date(job.updatedAt).toLocaleDateString("sk-SK")}</span>
-                                </div>
+                            </Link>
+                            <div className="absolute right-2 top-2 flex gap-1">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="text-slate-400 hover:text-blue-600 hover:bg-blue-50"
+                                    onClick={(e) => handleEditClick(e, job)}
+                                    title="Upraviť"
+                                >
+                                    <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="text-slate-400 hover:text-red-600 hover:bg-red-50"
+                                    onClick={(e) => handleDeleteClick(e, job)}
+                                    title="Zmazať"
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
                             </div>
-                        </Link>
+                        </div>
                     ))}
                 </div>
             )}
@@ -174,6 +294,110 @@ export default function ZakazkyPage() {
                         </Button>
                         <Button onClick={handleCreateJob} disabled={!newJobName.trim() || creating}>
                             {creating ? "Vytváram..." : "Vytvoriť"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog
+                open={deleteDialog.open}
+                onOpenChange={(open) =>
+                    !deleteDialog.loading &&
+                    setDeleteDialog((d) => ({ ...d, open, error: null }))
+                }
+            >
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Zmazať zákazku</DialogTitle>
+                    </DialogHeader>
+                    <p className="text-slate-600">
+                        Naozaj chcete zmazať zákazku{" "}
+                        <strong>{deleteDialog.job?.name}</strong>? Všetky položky zákazky budú vymazané.
+                    </p>
+                    {deleteDialog.error && (
+                        <p className="text-sm text-red-600">{deleteDialog.error}</p>
+                    )}
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() =>
+                                setDeleteDialog({ open: false, job: null, loading: false, error: null })
+                            }
+                            disabled={deleteDialog.loading}
+                        >
+                            Zrušiť
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={handleDeleteConfirm}
+                            disabled={deleteDialog.loading}
+                        >
+                            {deleteDialog.loading ? "Mažem..." : "Zmazať"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog
+                open={editDialog.open}
+                onOpenChange={(open) =>
+                    !editDialog.loading &&
+                    setEditDialog((d) => ({ ...d, open, error: null }))
+                }
+            >
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Upraviť zákazku</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-name">Názov zákazky</Label>
+                            <Input
+                                id="edit-name"
+                                value={editDialog.name}
+                                onChange={(e) =>
+                                    setEditDialog((d) => ({ ...d, name: e.target.value }))
+                                }
+                                placeholder="Napr. Kuchyňa p. Novák"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-description">Popis (voliteľné)</Label>
+                            <Textarea
+                                id="edit-description"
+                                value={editDialog.description}
+                                onChange={(e) =>
+                                    setEditDialog((d) => ({ ...d, description: e.target.value }))
+                                }
+                                placeholder="Poznámky k zákazke..."
+                            />
+                        </div>
+                        {editDialog.error && (
+                            <p className="text-sm text-red-600">{editDialog.error}</p>
+                        )}
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() =>
+                                setEditDialog({
+                                    open: false,
+                                    job: null,
+                                    name: "",
+                                    description: "",
+                                    loading: false,
+                                    error: null,
+                                })
+                            }
+                            disabled={editDialog.loading}
+                        >
+                            Zrušiť
+                        </Button>
+                        <Button
+                            onClick={handleEditSave}
+                            disabled={!editDialog.name.trim() || editDialog.loading}
+                        >
+                            {editDialog.loading ? "Ukladám..." : "Uložiť"}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

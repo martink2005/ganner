@@ -4,14 +4,29 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import {
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Save, Loader2, AlertCircle } from "lucide-react";
 
 interface ParameterValue {
     paramName: string;
     value: string;
+}
+
+interface ParamDef {
+    paramName: string;
+    label: string;
+    paramType?: string;
+    unit?: string | null;
+    group?: { id: string; name: string; sortOrder: number } | null;
 }
 
 interface JobItem {
@@ -24,11 +39,8 @@ interface JobItem {
     outputStatus: string;
     cabinet: {
         name: string;
-        parameters: {
-            paramName: string;
-            label: string;
-            unit?: string | null;
-        }[];
+        parameters: ParamDef[];
+        parameterGroups?: { id: string; name: string; sortOrder: number }[];
     };
     parameterValues: ParameterValue[];
 }
@@ -143,7 +155,12 @@ export function ItemDetailClient({ initialItem, jobId }: ItemDetailClientProps) 
 
                         <div className="grid grid-cols-3 gap-2">
                             <div className="space-y-2">
-                                <Label htmlFor="width">Šírka</Label>
+                                <Label htmlFor="width">
+                                    Šírka{" "}
+                                    <span className="text-xs font-normal text-slate-500">
+                                        – X
+                                    </span>
+                                </Label>
                                 <Input
                                     id="width"
                                     value={width}
@@ -151,7 +168,12 @@ export function ItemDetailClient({ initialItem, jobId }: ItemDetailClientProps) 
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="height">Výška</Label>
+                                <Label htmlFor="height">
+                                    Výška{" "}
+                                    <span className="text-xs font-normal text-slate-500">
+                                        – Y
+                                    </span>
+                                </Label>
                                 <Input
                                     id="height"
                                     value={height}
@@ -159,7 +181,12 @@ export function ItemDetailClient({ initialItem, jobId }: ItemDetailClientProps) 
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="depth">Hĺbka</Label>
+                                <Label htmlFor="depth">
+                                    Hĺbka{" "}
+                                    <span className="text-xs font-normal text-slate-500">
+                                        – Z
+                                    </span>
+                                </Label>
                                 <Input
                                     id="depth"
                                     value={depth}
@@ -193,35 +220,128 @@ export function ItemDetailClient({ initialItem, jobId }: ItemDetailClientProps) 
                             Offset (X_C_Y, Y_C_X) a hrubka (HRUB) sú špecifické pre každý dielec a čítajú sa z .ganx súborov; tu nie sú editovateľné.
                         </p>
                         <Separator />
-                        <div className="grid gap-4 sm:grid-cols-2">
-                            {item.parameterValues.map((p) => {
-                                const def = item.cabinet.parameters?.find(d => d.paramName === p.paramName);
-                                const hasNote = def?.label && def.label.trim() !== "";
-                                return (
-                                    <div key={p.paramName} className="space-y-2">
-                                        <Label htmlFor={p.paramName} className="block">
-                                            <span className="font-medium text-slate-900">{p.paramName}</span>
-                                            {hasNote && (
-                                                <span className="ml-2 text-xs font-normal text-slate-500">
-                                                    {def.label}
-                                                </span>
-                                            )}
-                                        </Label>
-                                        <div className="flex items-center gap-2">
-                                            <Input
-                                                id={p.paramName}
-                                                value={params[p.paramName] || ""}
-                                                onChange={e => handleParamChange(p.paramName, e.target.value)}
-                                                className="font-mono"
-                                            />
-                                            {def?.unit && (
-                                                <span className="text-sm text-slate-500 shrink-0">{def.unit}</span>
-                                            )}
-                                        </div>
-                                    </div>
+                        {(() => {
+                            const groups = item.cabinet.parameterGroups ?? [];
+                            const paramsByGroup = new Map<string, ParamDef[]>();
+                            let ungrouped: ParamDef[] = [];
+                            for (const pv of item.parameterValues) {
+                                const def = item.cabinet.parameters?.find(
+                                    (d) => d.paramName === pv.paramName
                                 );
-                            })}
-                        </div>
+                                if (!def) continue;
+                                if (def.group) {
+                                    const list = paramsByGroup.get(def.group.id) ?? [];
+                                    list.push(def);
+                                    paramsByGroup.set(def.group.id, list);
+                                } else {
+                                    ungrouped.push(def);
+                                }
+                            }
+                            const sections: { title: string; params: ParamDef[] }[] = [
+                                ...groups.map((g) => ({
+                                    title: g.name,
+                                    params: paramsByGroup.get(g.id) ?? [],
+                                })),
+                                ...(ungrouped.length > 0
+                                    ? [{ title: "Ostatné", params: ungrouped }]
+                                    : []),
+                            ];
+                            return (
+                                <div className="space-y-6">
+                                    {sections.map((section) => (
+                                        <Card key={section.title}>
+                                            <CardHeader className="pb-2">
+                                                <CardTitle className="text-base">
+                                                    {section.title}
+                                                </CardTitle>
+                                            </CardHeader>
+                                            <CardContent>
+                                                <div className="grid gap-4 sm:grid-cols-2">
+                                                    {section.params.map((def) => {
+                                                        const p = {
+                                                            paramName: def.paramName,
+                                                            value: params[def.paramName] ?? "",
+                                                        };
+                                                        const hasNote =
+                                                            def?.label && def.label.trim() !== "";
+                                                        const isBoolean =
+                                                            def?.paramType === "boolean";
+                                                        const boolChecked =
+                                                            isBoolean &&
+                                                            (params[def.paramName] === "true" ||
+                                                                params[def.paramName] === "1" ||
+                                                                params[def.paramName]?.toLowerCase() ===
+                                                                "true");
+                                                        return (
+                                                            <div
+                                                                key={def.paramName}
+                                                                className="space-y-2"
+                                                            >
+                                                                <Label
+                                                                    htmlFor={def.paramName}
+                                                                    className="block"
+                                                                >
+                                                                    <span className="font-medium text-slate-900">
+                                                                        {def.paramName}
+                                                                    </span>
+                                                                    {hasNote && (
+                                                                        <span className="ml-2 text-xs font-normal text-slate-500">
+                                                                            {def.label}
+                                                                        </span>
+                                                                    )}
+                                                                </Label>
+                                                                {isBoolean ? (
+                                                                    <label
+                                                                        htmlFor={def.paramName}
+                                                                        className="flex items-center gap-3 p-2 rounded-md border border-slate-200 bg-slate-50 w-fit cursor-pointer hover:bg-slate-100 transition-colors"
+                                                                    >
+                                                                        <Checkbox
+                                                                            id={def.paramName}
+                                                                            checked={boolChecked}
+                                                                            onCheckedChange={(checked) =>
+                                                                                handleParamChange(
+                                                                                    def.paramName,
+                                                                                    checked === true ? "true" : "false"
+                                                                                )
+                                                                            }
+                                                                        />
+                                                                        <span className="text-sm font-medium text-slate-700 select-none">
+                                                                            {boolChecked ? "Áno" : "Nie"}
+                                                                        </span>
+                                                                    </label>
+                                                                ) : (
+                                                                    <div className="flex items-center gap-2">
+                                                                        <Input
+                                                                            id={def.paramName}
+                                                                            value={
+                                                                                params[def.paramName] ||
+                                                                                ""
+                                                                            }
+                                                                            onChange={(e) =>
+                                                                                handleParamChange(
+                                                                                    def.paramName,
+                                                                                    e.target.value
+                                                                                )
+                                                                            }
+                                                                            className="font-mono"
+                                                                        />
+                                                                        {def?.unit && (
+                                                                            <span className="text-sm text-slate-500 shrink-0">
+                                                                                {def.unit}
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+                                </div>
+                            );
+                        })()}
                     </div>
                 </div>
             </div>

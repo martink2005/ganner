@@ -3,7 +3,14 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Plus, FileBox, Settings2, ChevronRight } from "lucide-react";
+import { Plus, FileBox, Settings2, Trash2 } from "lucide-react";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+} from "@/components/ui/dialog";
 
 interface Cabinet {
     id: string;
@@ -23,6 +30,12 @@ export default function KatalogPage() {
     const [cabinets, setCabinets] = useState<Cabinet[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [deleteDialog, setDeleteDialog] = useState<{
+        open: boolean;
+        cabinet: Cabinet | null;
+        loading: boolean;
+        error: string | null;
+    }>({ open: false, cabinet: null, loading: false, error: null });
 
     useEffect(() => {
         fetchCabinets();
@@ -42,6 +55,39 @@ export default function KatalogPage() {
             setError(err instanceof Error ? err.message : "Neznáma chyba");
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDeleteClick = (e: React.MouseEvent, cabinet: Cabinet) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDeleteDialog({ open: true, cabinet, loading: false, error: null });
+    };
+
+    const handleDeleteConfirm = async () => {
+        if (!deleteDialog.cabinet) return;
+        setDeleteDialog((d) => ({ ...d, loading: true, error: null }));
+        try {
+            const res = await fetch(`/api/catalog/${deleteDialog.cabinet.id}`, {
+                method: "DELETE",
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                setDeleteDialog((d) => ({
+                    ...d,
+                    loading: false,
+                    error: data.error || "Chyba pri mazaní",
+                }));
+                return;
+            }
+            setDeleteDialog({ open: false, cabinet: null, loading: false, error: null });
+            fetchCabinets();
+        } catch (err) {
+            setDeleteDialog((d) => ({
+                ...d,
+                loading: false,
+                error: err instanceof Error ? err.message : "Neznáma chyba",
+            }));
         }
     };
 
@@ -91,43 +137,95 @@ export default function KatalogPage() {
             ) : (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {cabinets.map((cabinet) => (
-                        <Link
+                        <div
                             key={cabinet.id}
-                            href={`/dashboard/katalog/${cabinet.slug}`}
-                            className="group rounded-lg border bg-white p-6 shadow-sm transition-all hover:border-blue-300 hover:shadow-md"
+                            className="group relative rounded-lg border bg-white p-6 shadow-sm transition-all hover:border-blue-300 hover:shadow-md"
                         >
-                            <div className="flex items-start justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="rounded-lg bg-blue-100 p-2 text-blue-600">
-                                        <FileBox className="h-5 w-5" />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-semibold text-slate-900">
-                                            {cabinet.name}
-                                        </h3>
-                                        <p className="text-sm text-slate-500">
-                                            {cabinet._count.files} súborov
-                                        </p>
+                            <Link
+                                href={`/dashboard/katalog/${cabinet.slug}`}
+                                className="block pr-12"
+                            >
+                                <div className="flex items-start justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="rounded-lg bg-blue-100 p-2 text-blue-600">
+                                            <FileBox className="h-5 w-5" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-semibold text-slate-900">
+                                                {cabinet.name}
+                                            </h3>
+                                            <p className="text-sm text-slate-500">
+                                                {cabinet._count.files} súborov
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
-                                <ChevronRight className="h-5 w-5 text-slate-400 transition-transform group-hover:translate-x-1" />
-                            </div>
 
-                            <div className="mt-4 flex items-center gap-4 text-sm text-slate-600">
-                                <div className="flex items-center gap-1">
-                                    <Settings2 className="h-4 w-4" />
-                                    <span>{cabinet._count.parameters} parametrov</span>
+                                <div className="mt-4 flex items-center gap-4 text-sm text-slate-600">
+                                    <div className="flex items-center gap-1">
+                                        <Settings2 className="h-4 w-4" />
+                                        <span>{cabinet._count.parameters} parametrov</span>
+                                    </div>
+                                    {cabinet.baseWidth && cabinet.baseHeight && (
+                                        <span>
+                                            {cabinet.baseWidth} × {cabinet.baseHeight} mm
+                                        </span>
+                                    )}
                                 </div>
-                                {cabinet.baseWidth && cabinet.baseHeight && (
-                                    <span>
-                                        {cabinet.baseWidth} × {cabinet.baseHeight} mm
-                                    </span>
-                                )}
-                            </div>
-                        </Link>
+                            </Link>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="absolute right-2 top-2 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                                onClick={(e) => handleDeleteClick(e, cabinet)}
+                                title="Zmazať"
+                            >
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </div>
                     ))}
                 </div>
             )}
+
+            <Dialog
+                open={deleteDialog.open}
+                onOpenChange={(open) =>
+                    !deleteDialog.loading &&
+                    setDeleteDialog((d) => ({ ...d, open, error: null }))
+                }
+            >
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Zmazať skrinku</DialogTitle>
+                    </DialogHeader>
+                    <p className="text-slate-600">
+                        Naozaj chcete zmazať skrinku{" "}
+                        <strong>{deleteDialog.cabinet?.name}</strong>? Táto akcia je
+                        nezvratná.
+                    </p>
+                    {deleteDialog.error && (
+                        <p className="text-sm text-red-600">{deleteDialog.error}</p>
+                    )}
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() =>
+                                setDeleteDialog({ open: false, cabinet: null, loading: false, error: null })
+                            }
+                            disabled={deleteDialog.loading}
+                        >
+                            Zrušiť
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={handleDeleteConfirm}
+                            disabled={deleteDialog.loading}
+                        >
+                            {deleteDialog.loading ? "Mažem..." : "Zmazať"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

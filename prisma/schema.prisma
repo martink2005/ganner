@@ -74,9 +74,24 @@ model Cabinet {
 
   files      CabinetFile[]
   parameters CabinetParameter[]
+  parameterGroups CabinetParameterGroup[]
   jobItems   JobItem[]
 
   @@map("cabinets")
+}
+
+/// Skupina parametrov skrinky (pre zobrazenie v zákazke)
+model CabinetParameterGroup {
+  id        String   @id @default(cuid())
+  cabinetId String   @map("cabinet_id")
+  cabinet   Cabinet  @relation(fields: [cabinetId], references: [id], onDelete: Cascade)
+  name      String
+  sortOrder Int      @default(0) @map("sort_order")
+
+  parameters CabinetParameter[]
+
+  @@index([cabinetId])
+  @@map("cabinet_parameter_groups")
 }
 
 /// Súbor .ganx v skrinke
@@ -100,6 +115,8 @@ model CabinetParameter {
   id           String   @id @default(cuid())
   cabinetId    String   @map("cabinet_id")
   cabinet      Cabinet  @relation(fields: [cabinetId], references: [id], onDelete: Cascade)
+  groupId      String?  @map("group_id")
+  group        CabinetParameterGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
   paramName    String   @map("param_name")
   label        String
   paramType    String   @default("number") @map("param_type")
@@ -111,6 +128,7 @@ model CabinetParameter {
 
   @@unique([cabinetId, paramName])
   @@index([cabinetId])
+  @@index([groupId])
   @@map("cabinet_parameters")
 }
 
