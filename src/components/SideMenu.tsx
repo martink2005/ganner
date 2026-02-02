@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { BookOpen, ClipboardList, LogOut } from "lucide-react";
+import { BookOpen, ClipboardList, FileText, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -16,6 +16,11 @@ const menuItems = [
         href: "/dashboard/zakazky",
         label: "Zákazky",
         icon: ClipboardList,
+    },
+    {
+        href: "/dashboard/dokumentacia",
+        label: "Dokumentácia",
+        icon: FileText,
     },
 ];
 
