@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, type ReactNode } from "react";
+import { useState, useEffect, useRef, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import {
     DndContext,
@@ -20,6 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
     Dialog,
     DialogContent,
@@ -51,6 +52,7 @@ interface File {
     relativePath: string;
     hash: string | null;
     cabinetId: string;
+    quantity?: number;
     createdAt: Date;
 }
 
@@ -76,6 +78,7 @@ interface Cabinet {
     id: string;
     name: string;
     slug: string;
+    description?: string | null;
     catalogPath: string;
     baseWidth: number | null;
     baseHeight: number | null;
@@ -185,6 +188,27 @@ export function CabinetDetailClient({ cabinet }: CabinetDetailClientProps) {
     const [previewData, setPreviewData] = useState<GanxFileDetail | null>(null);
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
+    const [fileQuantities, setFileQuantities] = useState<Record<string, number>>(() =>
+        Object.fromEntries(cabinet.files.map((f) => [f.id, Math.max(1, f.quantity ?? 1)]))
+    );
+    const [savingFileId, setSavingFileId] = useState<string | null>(null);
+    const [fileQuantityError, setFileQuantityError] = useState<string | null>(null);
+    /** Súbory s neuloženou zmenou množstva (zmenené od posledného uloženia) */
+    const [unsavedFileIds, setUnsavedFileIds] = useState<Set<string>>(new Set());
+    /** Po úspešnom uložení na chvíľu zobrazíme „Uložené“ */
+    const [savedFileId, setSavedFileId] = useState<string | null>(null);
+    /** Časovače pre autosave množstva (debounce) */
+    const autosaveTimeoutsRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+
+    /** Popis skrinky – lokálna hodnota a stavy ukladania */
+    const [description, setDescription] = useState(cabinet.description ?? "");
+    const [savingDescription, setSavingDescription] = useState(false);
+    const [descriptionError, setDescriptionError] = useState<string | null>(null);
+    const [descriptionUnsaved, setDescriptionUnsaved] = useState(false);
+    const [descriptionSaved, setDescriptionSaved] = useState(false);
+    const descriptionAutosaveRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const descriptionLatestRef = useRef(description);
+    descriptionLatestRef.current = description;
 
     const groups = cabinet.parameterGroups ?? [];
 
@@ -203,6 +227,78 @@ export function CabinetDetailClient({ cabinet }: CabinetDetailClientProps) {
     const [optimisticAssign, setOptimisticAssign] = useState<Record<string, string | null>>({});
 
     const refresh = () => router.refresh();
+
+    const saveFileQuantity = async (fileId: string, quantity: number) => {
+        if (autosaveTimeoutsRef.current[fileId]) {
+            clearTimeout(autosaveTimeoutsRef.current[fileId]);
+            delete autosaveTimeoutsRef.current[fileId];
+        }
+        const q = Math.max(1, Math.floor(quantity));
+        setSavingFileId(fileId);
+        setFileQuantityError(null);
+        try {
+            const res = await fetch(`/api/catalog/files/${fileId}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ quantity: q }),
+            });
+            if (res.ok) {
+                setUnsavedFileIds((prev) => {
+                    const next = new Set(prev);
+                    next.delete(fileId);
+                    return next;
+                });
+                setSavedFileId(fileId);
+                setTimeout(() => setSavedFileId(null), 2500);
+            } else {
+                const data = await res.json().catch(() => ({}));
+                setFileQuantityError(data.error ?? "Nepodarilo sa uložiť množstvo");
+            }
+        } catch (e) {
+            console.error(e);
+            setFileQuantityError("Chyba pri ukladaní");
+        } finally {
+            setSavingFileId(null);
+        }
+    };
+
+    const saveDescription = async (value: string) => {
+        if (descriptionAutosaveRef.current) {
+            clearTimeout(descriptionAutosaveRef.current);
+            descriptionAutosaveRef.current = null;
+        }
+        const desc = value.trim() || null;
+        setSavingDescription(true);
+        setDescriptionError(null);
+        try {
+            const res = await fetch(`/api/catalog/${cabinet.id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ description: desc ?? "" }),
+            });
+            if (res.ok) {
+                setDescriptionUnsaved(false);
+                setDescriptionSaved(true);
+                setTimeout(() => setDescriptionSaved(false), 2500);
+            } else {
+                const data = await res.json().catch(() => ({}));
+                setDescriptionError(data.error ?? "Nepodarilo sa uložiť popis");
+            }
+        } catch (e) {
+            console.error(e);
+            setDescriptionError("Chyba pri ukladaní");
+        } finally {
+            setSavingDescription(false);
+        }
+    };
+
+    useEffect(() => {
+        return () => {
+            Object.values(autosaveTimeoutsRef.current).forEach(clearTimeout);
+            autosaveTimeoutsRef.current = {};
+            if (descriptionAutosaveRef.current) clearTimeout(descriptionAutosaveRef.current);
+        };
+    }, []);
 
     useEffect(() => {
         setOptimisticAssign((prev) => {
@@ -386,26 +482,66 @@ export function CabinetDetailClient({ cabinet }: CabinetDetailClientProps) {
                             Súbory ({cabinet.files.length})
                         </CardTitle>
                         <CardDescription>
-                            .ganx programy pre jednotlivé dielce
+                            .ganx programy pre jednotlivé dielce. Množstvo = počet kusov v skrinke.
                         </CardDescription>
+                        {fileQuantityError && (
+                            <p className="text-sm text-red-600 mt-1">{fileQuantityError}</p>
+                        )}
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-2">
                             {cabinet.files.map((file) => (
                                 <div
                                     key={file.id}
-                                    className="flex items-center justify-between p-3 bg-slate-50 rounded-lg group hover:bg-slate-100 transition-colors"
+                                    className="flex items-center justify-between gap-3 p-3 bg-slate-50 rounded-lg group hover:bg-slate-100 transition-colors"
                                 >
-                                    <div className="flex items-center gap-3">
-                                        <FileCode className="h-5 w-5 text-blue-600" />
-                                        <span className="font-medium text-slate-900">
+                                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                                        <FileCode className="h-5 w-5 text-blue-600 shrink-0" />
+                                        <span className="font-medium text-slate-900 truncate">
                                             {file.filename}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-2 shrink-0">
+                                        <Label htmlFor={`qty-${file.id}`} className="text-xs text-slate-500 whitespace-nowrap">
+                                            Množstvo
+                                        </Label>
+                                        <Input
+                                            id={`qty-${file.id}`}
+                                            type="number"
+                                            min={1}
+                                            step={1}
+                                            className="w-16"
+                                            value={fileQuantities[file.id] ?? file.quantity ?? 1}
+                                            onChange={(e) => {
+                                                const v = e.target.value;
+                                                const n = v === "" ? 1 : Math.max(1, Math.floor(Number(v)));
+                                                setFileQuantities((prev) => ({ ...prev, [file.id]: n }));
+                                                setUnsavedFileIds((prev) => new Set(prev).add(file.id));
+                                                if (autosaveTimeoutsRef.current[file.id]) {
+                                                    clearTimeout(autosaveTimeoutsRef.current[file.id]);
+                                                }
+                                                autosaveTimeoutsRef.current[file.id] = setTimeout(() => {
+                                                    saveFileQuantity(file.id, n);
+                                                    delete autosaveTimeoutsRef.current[file.id];
+                                                }, 1500);
+                                            }}
+                                            onBlur={() => saveFileQuantity(file.id, fileQuantities[file.id] ?? file.quantity ?? 1)}
+                                            disabled={savingFileId === file.id}
+                                        />
+                                        <span className="text-xs min-w-[4.5rem]">
+                                            {savingFileId === file.id ? (
+                                                <span className="text-slate-500">Ukladám…</span>
+                                            ) : savedFileId === file.id ? (
+                                                <span className="text-green-600 font-medium">Uložené</span>
+                                            ) : unsavedFileIds.has(file.id) ? (
+                                                <span className="text-amber-600 font-medium">Neulozene</span>
+                                            ) : null}
                                         </span>
                                     </div>
                                     <Button
                                         variant="ghost"
                                         size="sm"
-                                        className="gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        className="gap-2 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
                                         onClick={() => handlePreview(file)}
                                         disabled={loading && selectedFile?.id === file.id}
                                     >
@@ -515,6 +651,50 @@ export function CabinetDetailClient({ cabinet }: CabinetDetailClientProps) {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Popis skrinky */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Popis skrinky</CardTitle>
+                    <CardDescription>
+                        Voliteľný textový popis skrinky. Ukladá sa automaticky po úpravách alebo pri kliknutí mimo pole.
+                    </CardDescription>
+                    {descriptionError && (
+                        <p className="text-sm text-red-600 mt-1">{descriptionError}</p>
+                    )}
+                </CardHeader>
+                <CardContent className="space-y-3">
+                    <Textarea
+                        id="cabinet-description"
+                        placeholder="Žiadny popis"
+                        value={description}
+                        onChange={(e) => {
+                            setDescription(e.target.value);
+                            setDescriptionUnsaved(true);
+                            if (descriptionAutosaveRef.current) {
+                                clearTimeout(descriptionAutosaveRef.current);
+                            }
+                            descriptionAutosaveRef.current = setTimeout(() => {
+                                saveDescription(descriptionLatestRef.current);
+                                descriptionAutosaveRef.current = null;
+                            }, 1500);
+                        }}
+                        onBlur={() => saveDescription(description)}
+                        disabled={savingDescription}
+                        rows={4}
+                        className="resize-y min-h-[100px]"
+                    />
+                    <div className="flex items-center gap-2 text-sm">
+                        {savingDescription ? (
+                            <span className="text-slate-500">Ukladám…</span>
+                        ) : descriptionSaved ? (
+                            <span className="text-green-600 font-medium">Uložené</span>
+                        ) : descriptionUnsaved ? (
+                            <span className="text-amber-600 font-medium">Neulozene</span>
+                        ) : null}
+                    </div>
+                </CardContent>
+            </Card>
 
             {/* Dialóg Pridať / Upraviť skupinu */}
             <Dialog

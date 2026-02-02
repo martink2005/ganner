@@ -105,6 +105,13 @@ export async function addCabinetToJob(
                         value: p.defaultValue || "",
                     })),
             },
+            // Množstvá dielcov z katalógu (default z CabinetFile.quantity)
+            fileQuantities: {
+                create: cabinet.files.map((f: { id: string; quantity?: number }) => ({
+                    fileId: f.id,
+                    quantity: Math.max(1, Math.floor((f as any).quantity ?? 1)),
+                })),
+            },
         },
     });
 
@@ -312,6 +319,7 @@ export async function updateJobItem(
         depth?: number | null;
         quantity?: number;
         parameters?: Record<string, string>;
+        fileQuantities?: { fileId: string; quantity: number }[];
     }
 ) {
     const item = await prisma.jobItem.findUnique({
@@ -392,6 +400,20 @@ export async function updateJobItem(
                 })
             );
             await prisma.$transaction(updates);
+        }
+    }
+
+    // 3b. Update množstiev dielcov (fileQuantities)
+    if (data.fileQuantities && data.fileQuantities.length > 0) {
+        for (const { fileId, quantity } of data.fileQuantities) {
+            const q = Math.max(1, Math.floor(quantity));
+            await prisma.jobItemFileQuantity.upsert({
+                where: {
+                    itemId_fileId: { itemId, fileId },
+                },
+                update: { quantity: q },
+                create: { itemId, fileId, quantity: q },
+            });
         }
     }
 

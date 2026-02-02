@@ -20,9 +20,11 @@ export default async function ItemDetailPage({ params }: Props) {
                         include: { group: true },
                     },
                     parameterGroups: { orderBy: { sortOrder: "asc" } },
+                    files: true,
                 },
             },
             parameterValues: true,
+            fileQuantities: true,
         },
     });
 

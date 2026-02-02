@@ -29,6 +29,17 @@ interface ParamDef {
     group?: { id: string; name: string; sortOrder: number } | null;
 }
 
+interface CabinetFileDef {
+    id: string;
+    filename: string;
+    quantity?: number;
+}
+
+interface FileQuantityDef {
+    fileId: string;
+    quantity: number;
+}
+
 interface JobItem {
     id: string;
     name: string;
@@ -41,8 +52,10 @@ interface JobItem {
         name: string;
         parameters: ParamDef[];
         parameterGroups?: { id: string; name: string; sortOrder: number }[];
+        files?: CabinetFileDef[];
     };
     parameterValues: ParameterValue[];
+    fileQuantities?: FileQuantityDef[];
 }
 
 interface ItemDetailClientProps {
@@ -72,6 +85,18 @@ export function ItemDetailClient({ initialItem, jobId }: ItemDetailClientProps) 
         return map;
     });
 
+    // Množstvo pre každý dielec: fileId -> quantity (default z fileQuantities alebo cabinet.files.quantity alebo 1)
+    const getDefaultFileQuantities = (): Record<string, number> => {
+        const files = item.cabinet.files ?? [];
+        const map: Record<string, number> = {};
+        for (const f of files) {
+            const fq = item.fileQuantities?.find((q) => q.fileId === f.id);
+            map[f.id] = Math.max(1, fq?.quantity ?? (f as { quantity?: number }).quantity ?? 1);
+        }
+        return map;
+    };
+    const [fileQuantities, setFileQuantities] = useState<Record<string, number>>(getDefaultFileQuantities);
+
     const handleParamChange = (key: string, value: string) => {
         setParams(prev => ({
             ...prev,
@@ -88,6 +113,12 @@ export function ItemDetailClient({ initialItem, jobId }: ItemDetailClientProps) 
         }
         setLoading(true);
         try {
+            const files = item.cabinet.files ?? [];
+            const fileQuantitiesPayload = files.map((f) => ({
+                fileId: f.id,
+                quantity: Math.max(1, Math.floor(fileQuantities[f.id] ?? 1)),
+            }));
+
             const response = await fetch(`/api/jobs/items/${item.id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
@@ -97,7 +128,8 @@ export function ItemDetailClient({ initialItem, jobId }: ItemDetailClientProps) 
                     height: parseFloat(height) || null,
                     depth: parseFloat(depth) || null,
                     quantity: qtyNum,
-                    parameters: params
+                    parameters: params,
+                    fileQuantities: fileQuantitiesPayload.length > 0 ? fileQuantitiesPayload : undefined,
                 })
             });
 
@@ -209,6 +241,47 @@ export function ItemDetailClient({ initialItem, jobId }: ItemDetailClientProps) 
                                 Evidencia počtu kusov (min. 1)
                             </p>
                         </div>
+
+                        {(item.cabinet.files?.length ?? 0) > 0 && (
+                            <>
+                                <Separator />
+                                <div className="space-y-3">
+                                    <h3 className="font-semibold text-slate-900">Množstvá dielcov</h3>
+                                    <p className="text-xs text-slate-500">
+                                        Počet kusov každého dielca (programu) v tejto skrinke.
+                                    </p>
+                                    <div className="space-y-2">
+                                        {(item.cabinet.files ?? []).map((file) => (
+                                            <div
+                                                key={file.id}
+                                                className="flex items-center justify-between gap-3"
+                                            >
+                                                <Label
+                                                    htmlFor={`file-qty-${file.id}`}
+                                                    className="text-sm font-medium text-slate-700 shrink-0 min-w-0 truncate"
+                                                    title={file.filename}
+                                                >
+                                                    {file.filename}
+                                                </Label>
+                                                <Input
+                                                    id={`file-qty-${file.id}`}
+                                                    type="number"
+                                                    min={1}
+                                                    step={1}
+                                                    className="w-20"
+                                                    value={fileQuantities[file.id] ?? 1}
+                                                    onChange={(e) => {
+                                                        const v = e.target.value;
+                                                        const n = v === "" ? 1 : Math.max(1, Math.floor(Number(v)));
+                                                        setFileQuantities((prev) => ({ ...prev, [file.id]: n }));
+                                                    }}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
 

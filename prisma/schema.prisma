@@ -63,6 +63,7 @@ model Cabinet {
   id          String           @id @default(cuid())
   name        String
   slug        String           @unique
+  description String?          // Voliteľný popis skrinky
   categoryId  String?          @map("category_id")
   category    CabinetCategory? @relation(fields: [categoryId], references: [id])
   baseWidth   Float?           @map("base_width")
@@ -102,9 +103,11 @@ model CabinetFile {
   filename     String
   relativePath String   @map("relative_path")
   hash         String?
+  quantity     Int      @default(1) // Počet kusov tohto dielca v skrinke
   createdAt    DateTime @default(now()) @map("created_at")
 
   parameterUsages CabinetParameterUsage[]
+  jobItemFileQuantities JobItemFileQuantity[]
 
   @@index([cabinetId])
   @@map("cabinet_files")
@@ -184,9 +187,25 @@ model JobItem {
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
   parameterValues JobItemParameterValue[]
+  fileQuantities JobItemFileQuantity[]
 
   @@unique([jobId, name]) // Názov musí byť v zákazke unikátny
   @@map("job_items")
+}
+
+/// Množstvo dielca (súboru) v položke zákazky
+model JobItemFileQuantity {
+  id       String    @id @default(cuid())
+  itemId   String    @map("item_id")
+  item     JobItem   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  fileId   String    @map("file_id")
+  file     CabinetFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  quantity Int       // min 1
+
+  @@unique([itemId, fileId])
+  @@index([itemId])
+  @@index([fileId])
+  @@map("job_item_file_quantities")
 }
 
 /// Hodnota parametra pre konkrétnu položku

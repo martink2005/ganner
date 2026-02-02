@@ -2,6 +2,46 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
 /**
+ * PATCH /api/catalog/[id] - Aktualizácia skrinky (napr. popis).
+ */
+export async function PATCH(
+    request: NextRequest,
+    { params }: { params: { id: string } }
+) {
+    try {
+        const id = params.id;
+        const body = await request.json();
+
+        if (body.description !== undefined) {
+            const description =
+                body.description === null || body.description === ""
+                    ? null
+                    : String(body.description).trim() || null;
+            const cabinet = await prisma.cabinet.findUnique({
+                where: { id },
+            });
+            if (!cabinet) {
+                return NextResponse.json(
+                    { error: "Skrinka neexistuje" },
+                    { status: 404 }
+                );
+            }
+            await prisma.cabinet.update({
+                where: { id },
+                data: { description },
+            });
+        }
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error("Catalog PATCH API error:", error);
+        return NextResponse.json(
+            { error: "Nastala chyba pri ukladaní" },
+            { status: 500 }
+        );
+    }
+}
+
+/**
  * DELETE /api/catalog/[id] - Vymazanie skrinky z katalógu.
  * Ak je skrinka použitá v zákazkách (JobItem.cabinetId), vráti 400.
  */

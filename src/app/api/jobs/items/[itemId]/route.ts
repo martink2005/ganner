@@ -26,6 +26,18 @@ export async function PUT(
             quantity = q;
         }
 
+        // Validácia fileQuantities (ak sú poslané)
+        let fileQuantities: { fileId: string; quantity: number }[] | undefined;
+        if (Array.isArray(body.fileQuantities)) {
+            fileQuantities = [];
+            for (const fq of body.fileQuantities) {
+                const q = Math.floor(Number(fq?.quantity ?? 0));
+                if (typeof fq?.fileId === "string" && Number.isFinite(q) && q >= 1) {
+                    fileQuantities.push({ fileId: fq.fileId, quantity: q });
+                }
+            }
+        }
+
         const updateData: Parameters<typeof updateJobItem>[1] = {
             name: body.name,
             width: body.width,
@@ -34,6 +46,7 @@ export async function PUT(
             parameters: body.parameters,
         };
         if (quantity !== undefined) updateData.quantity = quantity;
+        if (fileQuantities !== undefined) updateData.fileQuantities = fileQuantities;
 
         await updateJobItem(itemId, updateData);
 
@@ -85,9 +98,12 @@ export async function GET(
                 cabinet: {
                     include: {
                         parameters: true,
+                        parameterGroups: true,
+                        files: true,
                     },
                 },
                 parameterValues: true,
+                fileQuantities: true,
             },
         });
 

@@ -1,0 +1,1 @@
+implementuj na dokumentaciu pouzivaj mcp context7

@@ -78,4 +78,36 @@ Pri implementácii každej úlohy **používaj MCP context7** pre dokumentáciu 
 
 ---
 
+## Feature 8: Množstvo dielca/programu v katalógu a v zákazke
+
+**Cieľ:** V katalógu pri otvorení skrinky pridať možnosť zadať množstvo ku každému dielcu (programu) – definuje počet kusov daného dielca v skrinke. Pri editovaní skrinky v zákazke tieto množstvá musia byť editovateľné. Pri pridaní skrinky do zákazky default = hodnota z katalógu.
+
+- [x] **Dokumentácia:** Pre implementáciu používaj MCP context7 (Prisma migrácie, Next.js API, React formuláre, shadcn/ui Input).
+- [x] **DB – katalóg:** V modeli `CabinetFile` pridať pole `quantity Int @default(1)` (počet kusov tohto dielca v skrinke). Vytvoriť migráciu.
+- [x] **DB – zákazka:** Pridať model `JobItemFileQuantity`: `id`, `itemId` (FK na JobItem, onDelete Cascade), `fileId` (FK na CabinetFile), `quantity` (Int, min 1). Unikátna dvojica `[itemId, fileId]`. Migrácia.
+- [x] **API – katalóg:** Endpoint na uloženie množstva súboru v katalógu: napr. `PATCH /api/catalog/files/[fileId]` s telom `{ quantity: number }` (validácia: celé číslo ≥ 1). Aktualizovať `CabinetFile.quantity`.
+- [x] **API – načítanie skrinky v katalógu:** Overiť, že GET katalógu/skrinky (napr. stránka `katalog/[slug]` alebo existujúce API) vracia pri `files` aj pole `quantity` (CabinetFile.quantity).
+- [x] **Frontend – katalóg:** Na stránke `src/app/dashboard/katalog/[slug]/client.tsx` v sekcii „Súbory“ pri každom súbore (dielci/programe) pridať vstup pre **Množstvo** (Input type number, min 1). Načítavať a zobrazovať `file.quantity`. Pri zmene volať `PATCH /api/catalog/files/[fileId]` s `{ quantity }` (pri úspechu aktualizovať lokálny state).
+- [x] **Job service – pridanie skrinky:** V `addCabinetToJob` po vytvorení `JobItem` vytvoriť záznamy `JobItemFileQuantity` pre každý `cabinet.files` s `quantity: file.quantity` (z katalógu). Načítať `cabinet` s `files: true` a použiť `file.quantity` (ak neexistuje, default 1).
+- [x] **API – položka zákazky GET:** V `GET /api/jobs/items/[itemId]` v `include` pridať `cabinet: { include: { files: true } }` (ak ešte nie je) a načítať `fileQuantities` (JobItemFileQuantity) pre položku – vrátiť v response tak, aby frontend vedel zobraziť množstvo pre každý súbor (napr. `item.fileQuantities` alebo map fileId → quantity).
+- [x] **API – položka zákazky PUT:** Rozšíriť `PUT /api/jobs/items/[itemId]` o prijatie tela `fileQuantities?: { fileId: string; quantity: number }[]`. Validácia: každé quantity ≥ 1. Volať `updateJobItem` s novým parametrom `fileQuantities` (upsert JobItemFileQuantity pre daný itemId).
+- [x] **Job service – updateJobItem:** Rozšíriť `updateJobItem` o podporu `fileQuantities?: { fileId: string; quantity: number }[]`. Ak je pole zadané, pre daný `itemId` synchronizovať záznamy v `JobItemFileQuantity` (napr. vymazať staré pre item a vytvoriť nové podľa poľa, alebo upsert podľa fileId).
+- [x] **Frontend – edit skrinky v zákazke:** V `src/app/dashboard/zakazky/[id]/item/[itemId]/client.tsx` načítať pri položke aj zoznam súborov (dielcov) s množstvami (z `item.cabinet.files` a `item.fileQuantities` alebo ekvivalent). Pridať sekciu „Množstvá dielcov“ (alebo rozšíriť základné údaje) s poľom pre každý súbor: názov súboru + Input pre množstvo (min 1). Pri uložení poslať v PUT aj `fileQuantities: [{ fileId, quantity }, ...]`.
+- [x] **Frontend – stavy a validácia:** Pri zmene množstva v katalógu aj v zákazke zablokovať odoslanie ak quantity < 1; pri chybe API zobraziť hlášku. Voliteľne: loading stav pri ukladaní množstva v katalógu (inline alebo celý blok).
+
+---
+
+## Feature 9: Popis skrinky v katalógu
+
+**Cieľ:** V katalógu pridať možnosť zadať/upraviť popis ku skrinke. Popis sa zobrazí a bude editovateľný na stránke detailu skrinky (`katalog/[slug]`).
+
+- [x] **Dokumentácia:** Pre implementáciu používaj MCP context7 (Prisma migrácie, Next.js API, React formuláre, shadcn/ui Textarea).
+- [x] **DB:** V modeli `Cabinet` pridať pole `description String?` (voliteľný popis skrinky). Vytvoriť migráciu.
+- [x] **API:** Pridať `PATCH /api/catalog/[id]/route.ts` – prijíma `{ description?: string | null }`. Aktualizovať `Cabinet.description`. Validácia: ak je `description` reťazec, povoliť prázdny; ak `null` alebo chýba, ponechať/vyčistiť. Alternatíva: existujúci route má len DELETE – pridať PATCH handler do toho istého súboru.
+- [x] **API – načítanie:** Overiť, že načítanie skrinky (getCabinetDetail / stránka `katalog/[slug]`) vracia pole `description` (Prisma vráti automaticky po pridání stĺpca).
+- [x] **Frontend – katalóg:** Na stránke `src/app/dashboard/katalog/[slug]` (v `CabinetDetailClient` alebo v page nad názvom) pridať sekciu **Popis skrinky**: zobraziť aktuálny `cabinet.description` (ak je prázdny, zobraziť placeholder napr. „Žiadny popis“ alebo prázdne pole). Umožniť editáciu cez `Textarea` (viacriadkový vstup). Uloženie: pri zmene (onBlur) alebo tlačidlo „Uložiť popis“ volať `PATCH /api/catalog/[cabinet.id]` s `{ description: value }`. Pri úspechu aktualizovať lokálny state / refresh.
+- [x] **Frontend – stavy:** Počas ukladania zobraziť loading (napr. „Ukladám…“); pri chybe API zobraziť hlášku. Voliteľne: indikácia „Neulozene“ / „Uložené“ analogicky ako pri množstve dielcov.
+
+---
+
 Po dokončení všetkých úloh danej feature zaskrtni príslušný checkbox v `doc/next-poziadavky.md`.
