@@ -12,3 +12,5 @@ Next features for application
 [x] Do katalogu ked otvorim danu skrinku pridaj moznost zadat mnozstvo ku kazemu dielcu respektive programu, to bude definovat pocet kolko je toho dielca v danej skrinke, pri editovani skrinky v zakazke sa musia dat tieto mnozstva upravit ale ked sa prida skrinka tak default bude hodnota z katalogu
 [x] Pridaj moznost v katalogu pridat popis ku skrinke
 [x] Pridaj do katalogu kategorizaciu skriniek, to znamena ze skrinky môzu patrit do kategorii, kategorie budu rekurzivne a budu sa dat vytvarat donekonecna, nech tam je aj filtrovanie podla kategorii..., kategorie sa musia dat aj spravovat
+[x] Pridaj aby sa pri importe skrinky dal nastavit default rozmer skrinky, a tiez aby sa dala rovno nastavit kategoria
+[x] Pri importe ak skrinky s danym nazvom uz existuje nech vybehne modal ze uz s takym nazvom existuje a aby sa dal prepisat nazov

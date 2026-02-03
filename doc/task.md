@@ -129,4 +129,32 @@ Pri implementácii každej úlohy **používaj MCP context7** pre dokumentáciu 
 
 ---
 
+## Feature 11: Pri importe skrinky – default rozmer a kategória
+
+**Cieľ:** Pri importe skrinky umožniť nastaviť default rozmer skrinky (šírka, výška, hĺbka) a rovno priradiť kategóriu. Rozmery môžu byť prepísané oproti hodnotám z .ganx; kategória sa nastaví pri vytvorení skrinky.
+
+- [x] **Dokumentácia:** Pre implementáciu používaj MCP context7 (Next.js Route Handlers, Prisma create, React formuláre, shadcn/ui Select/Input).
+- [x] **API – import:** Rozšíriť `POST /api/catalog/import` o voliteľné body parametre: `defaultWidth?: number | null`, `defaultHeight?: number | null`, `defaultDepth?: number | null`, `categoryId?: string | null`. Validácia: ak sú rozmery zadané, musia byť kladné čísla. Ak je `categoryId` zadané, overiť že kategória existuje (`prisma.cabinetCategory.findUnique`). Odovzdať tieto hodnoty do `importCabinet(..., options)`.
+- [x] **cabinet-import – importCabinet:** Rozšíriť signatúru `importCabinet(sourcePath, catalogRoot, options?)` kde `options` je `{ defaultWidth?: number | null; defaultHeight?: number | null; defaultDepth?: number | null; categoryId?: string | null }`. Pri vytváraní `Cabinet`: ak sú v `options` zadané `defaultWidth`/`defaultHeight`/`defaultDepth`, použiť ich pre `baseWidth`/`baseHeight`/`baseDepth`; inak ponechať stávajúcu logiku (hodnoty z prvého .ganx `prgrSet`). Ak je v `options` `categoryId`, nastaviť v `data` pri `prisma.cabinet.create` pole `categoryId` (null = žiadna kategória).
+- [x] **Frontend – kategórie:** Na stránke `src/app/dashboard/katalog/import/page.tsx` načítať strom kategórií (napr. `GET /api/catalog/categories`) pri mounte alebo pred prvým importom. Použiť existujúcu utilitu na plochý zoznam pre Select (napr. `flattenCategoriesForSelect` z category-utils alebo ekvivalent).
+- [x] **Frontend – formulár:** Pridať sekciu „Pred importom (voliteľné)“ s poľami: **Šírka – X (mm)**, **Výška – Y (mm)**, **Hĺbka – Z (mm)** (Input type number, voliteľné, min 0 alebo prázdne) a **Kategória** (Select: „Žiadna“ + zoznam kategórií). Ak používateľ nezadá rozmery, pri importe sa použijú hodnoty z .ganx (súčasné správanie).
+- [x] **Frontend – odoslanie:** Pri volaní `POST /api/catalog/import` poslať v body okrem `sourcePath` (a `catalogRoot`) aj `defaultWidth`, `defaultHeight`, `defaultDepth` (iba ak vyplnené, inak neposielať alebo null) a `categoryId` (id vybranej kategórie alebo null pre „Žiadna“). Po úspešnom importe ponechať presmerovanie na detail skrinky.
+- [x] **Frontend – stavy:** Počas načítavania kategórií neblokovať formulár; pri chybe načítania kategórií zobraziť fallback (Select bez kategórií alebo „Žiadna“). Validácia: ak sú rozmery vyplnené, odoslať len kladné čísla.
+
+---
+
+## Feature 12: Pri importe – modal „názov už existuje“ a možnosť prepísať názov
+
+**Cieľ:** Ak pri importe skrinky už v katalógu existuje skrinka s rovnakým názvom (slug), nezobraziť len chybovú hlášku, ale modal s informáciou a možnosťou zadať nový názov a importovať s ním (prepísať názov).
+
+- [x] **Dokumentácia:** Pre implementáciu používaj MCP context7 (Next.js API, React state, Dialog/Modal, formuláre).
+- [x] **API – import:** Rozšíriť `POST /api/catalog/import` o voliteľný body parameter `overrideName?: string | null`. Ak je zadaný, odovzdať do `importCabinet(..., options)`. Validácia: ak je `overrideName` poslaný, musí byť neprázdny reťazec po trim. Pri odpovedi 400 z dôvodu „skrinka už existuje“ vrátiť v JSON aj pole `code: "CABINET_EXISTS"` (a prípadne `existingName`), aby frontend vedel zobraziť modal namiesto generickej chyby.
+- [x] **cabinet-import – importCabinet:** Rozšíriť `ImportCabinetOptions` o `overrideName?: string | null`. Na začiatku importu: ak `options?.overrideName` je neprázdny reťazec, použiť ho ako `cabinetName` a `createSlug(options.overrideName)` ako `slug`; inak ponechať súčasné správanie (`path.basename(sourcePath)` a `createSlug(cabinetName)`). Zvyšok logiky (kontrola existing, vytvorenie priečinka pod novým slugom, atď.) ostáva rovnaký.
+- [x] **Frontend – detekcia konfliktu:** Pri volaní `POST /api/catalog/import` ak response nie je ok a v `data` je `data.code === "CABINET_EXISTS"` (alebo ekvivalentná detekcia z error message), namiesto zobrazenia chyby v alert/texte otvoriť modal „Skrinka s týmto názvom už existuje“.
+- [x] **Frontend – modal:** Pridať modal (napr. `Dialog` z `@/components/ui/dialog`) s titulkom typu „Skrinka s týmto názvom už existuje“, textom že v katalógu už je skrinka s rovnakým názvom a že môže zadať iný názov. Input pre nový názov (placeholder alebo predvyplnený návrh, napr. priečinok + „_2“). Tlačidlá „Zrušiť“ (zatvoriť modal) a „Importovať s novým názvom“ (odoslať znova POST s `overrideName` = hodnota z inputu, ostatné parametre rovnaké ako pri prvom pokuse).
+- [x] **Frontend – odoslanie s novým názvom:** Pri kliku na „Importovať s novým názvom“ volať `POST /api/catalog/import` s rovnakým `sourcePath` (a ďalšími voliteľnými parametrami) a pridaným `overrideName: newName`. Validácia: nový názov nesmie byť prázdny. Pri úspechu zatvoriť modal, zobraziť success a presmerovať na detail skrinky ako doteraz. Pri ďalšej chybe (napr. opätovný konflikt) zobraziť chybu v modale alebo v texte.
+- [x] **Frontend – stavy:** Počas odosielania s novým názvom zablokovať tlačidlo (loading). Pri zatvorení modalu zrušiť stav „zobrazený modal“.
+
+---
+
 Po dokončení všetkých úloh danej feature zaskrtni príslušný checkbox v `doc/next-poziadavky.md`.

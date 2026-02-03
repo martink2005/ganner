@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,14 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { ArrowLeft, FolderOpen, FileCode, CheckCircle, Search } from "lucide-react";
 import { FileBrowser } from "@/components/FileBrowser";
 
@@ -28,6 +36,20 @@ interface ScanResult {
     totalFiles: number;
 }
 
+type CategoryTreeNode = { id: string; name: string; children: CategoryTreeNode[] };
+
+function flattenCategoriesForSelect(
+    nodes: CategoryTreeNode[],
+    depth = 0
+): { id: string; label: string }[] {
+    const out: { id: string; label: string }[] = [];
+    for (const n of nodes) {
+        out.push({ id: n.id, label: "—".repeat(depth) + (depth ? " " : "") + n.name });
+        out.push(...flattenCategoriesForSelect(n.children ?? [], depth + 1));
+    }
+    return out;
+}
+
 export default function ImportPage() {
     const router = useRouter();
     const [sourcePath, setSourcePath] = useState("");
@@ -37,6 +59,31 @@ export default function ImportPage() {
     const [importing, setImporting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
+
+    /** Pred importom (voliteľné): default rozmer a kategória */
+    const [defaultWidth, setDefaultWidth] = useState<string>("");
+    const [defaultHeight, setDefaultHeight] = useState<string>("");
+    const [defaultDepth, setDefaultDepth] = useState<string>("");
+    const [categoryId, setCategoryId] = useState<string>("");
+    const [categoriesTree, setCategoriesTree] = useState<CategoryTreeNode[]>([]);
+
+    /** Modal „skrinka s týmto názvom už existuje“ – prepísanie názvu */
+    const [conflictModalOpen, setConflictModalOpen] = useState(false);
+    const [conflictExistingName, setConflictExistingName] = useState("");
+    const [overrideNameInput, setOverrideNameInput] = useState("");
+    const [importingWithOverride, setImportingWithOverride] = useState(false);
+    const [conflictModalError, setConflictModalError] = useState<string | null>(null);
+
+    useEffect(() => {
+        fetch("/api/catalog/categories")
+            .then((r) => r.json())
+            .then((data) =>
+                data.categories ? setCategoriesTree(data.categories) : undefined
+            )
+            .catch(() => { });
+    }, []);
+
+    const categoryOptions = flattenCategoriesForSelect(categoriesTree);
 
     const handleScan = async (pathToCheck: string = sourcePath) => {
         if (!pathToCheck.trim()) {
@@ -78,9 +125,32 @@ export default function ImportPage() {
     const handleImport = async () => {
         if (!sourcePath.trim()) return;
 
+        const w = defaultWidth.trim() ? Number(defaultWidth) : null;
+        const h = defaultHeight.trim() ? Number(defaultHeight) : null;
+        const d = defaultDepth.trim() ? Number(defaultDepth) : null;
+        if (w !== null && (Number.isNaN(w) || w <= 0)) {
+            setError("Šírka musí byť kladné číslo");
+            return;
+        }
+        if (h !== null && (Number.isNaN(h) || h <= 0)) {
+            setError("Výška musí byť kladné číslo");
+            return;
+        }
+        if (d !== null && (Number.isNaN(d) || d <= 0)) {
+            setError("Hĺbka musí byť kladné číslo");
+            return;
+        }
+
         setImporting(true);
         setError(null);
         setSuccess(null);
+
+        const body: Record<string, unknown> = { sourcePath };
+        if (w != null && w > 0) body.defaultWidth = w;
+        if (h != null && h > 0) body.defaultHeight = h;
+        if (d != null && d > 0) body.defaultDepth = d;
+        if (categoryId.trim()) body.categoryId = categoryId;
+        else body.categoryId = null;
 
         try {
             const response = await fetch("/api/catalog/import", {
@@ -88,12 +158,20 @@ export default function ImportPage() {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ sourcePath }),
+                body: JSON.stringify(body),
             });
 
             const data = await response.json();
 
             if (!response.ok) {
+                if (data.code === "CABINET_EXISTS") {
+                    const folderName = sourcePath.split(/[/\\]/).pop() || "skrinka";
+                    setConflictExistingName(data.existingName ?? folderName);
+                    setOverrideNameInput(`${folderName}_2`);
+                    setConflictModalError(null);
+                    setConflictModalOpen(true);
+                    return;
+                }
                 throw new Error(data.error || "Chyba pri importe");
             }
 
@@ -110,6 +188,65 @@ export default function ImportPage() {
             setError(err instanceof Error ? err.message : "Neznáma chyba");
         } finally {
             setImporting(false);
+        }
+    };
+
+    const handleImportWithOverrideName = async () => {
+        const newName = overrideNameInput.trim();
+        if (!newName) {
+            setConflictModalError("Zadajte názov skrinky");
+            return;
+        }
+        if (!sourcePath.trim()) return;
+
+        setImportingWithOverride(true);
+        setConflictModalError(null);
+
+        const w = defaultWidth.trim() ? Number(defaultWidth) : null;
+        const h = defaultHeight.trim() ? Number(defaultHeight) : null;
+        const d = defaultDepth.trim() ? Number(defaultDepth) : null;
+        const body: Record<string, unknown> = {
+            sourcePath,
+            overrideName: newName,
+        };
+        if (w != null && w > 0) body.defaultWidth = w;
+        if (h != null && h > 0) body.defaultHeight = h;
+        if (d != null && d > 0) body.defaultDepth = d;
+        if (categoryId.trim()) body.categoryId = categoryId;
+        else body.categoryId = null;
+
+        try {
+            const response = await fetch("/api/catalog/import", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body),
+            });
+            const data = await response.json();
+
+            if (!response.ok) {
+                if (data.code === "CABINET_EXISTS") {
+                    setConflictExistingName(data.existingName ?? newName);
+                    setConflictModalError(
+                        data.error || "Skrinka s týmto názvom už existuje. Skúste iný názov."
+                    );
+                    return;
+                }
+                setConflictModalError(data.error || "Chyba pri importe");
+                return;
+            }
+
+            setConflictModalOpen(false);
+            setSuccess(
+                `Skrinka "${data.cabinet.name}" bola úspešne importovaná! ` +
+                `${data.filesCount} súborov, ${data.parametersCount} parametrov.`
+            );
+            setTimeout(() => {
+                router.push(`/dashboard/katalog/${data.cabinet.slug}`);
+            }, 2000);
+        } catch (err) {
+            setConflictModalError(err instanceof Error ? err.message : "Neznáma chyba");
+        } finally {
+            setImportingWithOverride(false);
         }
     };
 
@@ -173,6 +310,77 @@ export default function ImportPage() {
                             onSelect={handleBrowserSelect}
                             initialPath={sourcePath}
                         />
+
+                        {/* Pred importom (voliteľné): default rozmer a kategória */}
+                        <div className="space-y-4 pt-2 border-t border-slate-200">
+                            <h3 className="text-sm font-medium text-slate-700">
+                                Pred importom (voliteľné)
+                            </h3>
+                            <p className="text-xs text-slate-500">
+                                Ak nezadáš rozmery, použijú sa hodnoty z .ganx súborov. Kategóriu môžeš zadať rovno pri importe.
+                            </p>
+                            <div className="grid gap-3 sm:grid-cols-3">
+                                <div className="space-y-1">
+                                    <Label htmlFor="import-defaultWidth">Šírka – X (mm)</Label>
+                                    <Input
+                                        id="import-defaultWidth"
+                                        type="number"
+                                        min={0}
+                                        step={0.1}
+                                        placeholder="z .ganx"
+                                        value={defaultWidth}
+                                        onChange={(e) => setDefaultWidth(e.target.value)}
+                                        disabled={scanning || importing}
+                                        className="font-mono"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <Label htmlFor="import-defaultHeight">Výška – Y (mm)</Label>
+                                    <Input
+                                        id="import-defaultHeight"
+                                        type="number"
+                                        min={0}
+                                        step={0.1}
+                                        placeholder="z .ganx"
+                                        value={defaultHeight}
+                                        onChange={(e) => setDefaultHeight(e.target.value)}
+                                        disabled={scanning || importing}
+                                        className="font-mono"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <Label htmlFor="import-defaultDepth">Hĺbka – Z (mm)</Label>
+                                    <Input
+                                        id="import-defaultDepth"
+                                        type="number"
+                                        min={0}
+                                        step={0.1}
+                                        placeholder="z .ganx"
+                                        value={defaultDepth}
+                                        onChange={(e) => setDefaultDepth(e.target.value)}
+                                        disabled={scanning || importing}
+                                        className="font-mono"
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="import-category">Kategória</Label>
+                                <select
+                                    id="import-category"
+                                    className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm min-w-0"
+                                    value={categoryId}
+                                    onChange={(e) => setCategoryId(e.target.value)}
+                                    disabled={scanning || importing}
+                                >
+                                    <option value="">Žiadna</option>
+                                    {categoryOptions.map((o) => (
+                                        <option key={o.id} value={o.id}>
+                                            {o.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
 
                         {error && (
                             <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md whitespace-pre-wrap">
@@ -264,6 +472,52 @@ export default function ImportPage() {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Modal: skrinka s týmto názvom už existuje – možnosť prepísať názov */}
+            <Dialog open={conflictModalOpen} onOpenChange={(open) => {
+                setConflictModalOpen(open);
+                if (!open) setConflictModalError(null);
+            }}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Skrinka s týmto názvom už existuje</DialogTitle>
+                        <DialogDescription>
+                            V katalógu už je skrinka s názvom „{conflictExistingName}“. Môžeš zadať iný názov a importovať skrinku s novým názvom.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-3 py-2">
+                        <div className="space-y-1">
+                            <Label htmlFor="override-name">Nový názov skrinky</Label>
+                            <Input
+                                id="override-name"
+                                value={overrideNameInput}
+                                onChange={(e) => setOverrideNameInput(e.target.value)}
+                                placeholder="napr. názov_2"
+                                disabled={importingWithOverride}
+                                className="font-mono"
+                            />
+                        </div>
+                        {conflictModalError && (
+                            <p className="text-sm text-red-600">{conflictModalError}</p>
+                        )}
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setConflictModalOpen(false)}
+                            disabled={importingWithOverride}
+                        >
+                            Zrušiť
+                        </Button>
+                        <Button
+                            onClick={handleImportWithOverrideName}
+                            disabled={!overrideNameInput.trim() || importingWithOverride}
+                        >
+                            {importingWithOverride ? "Importujem..." : "Importovať s novým názvom"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

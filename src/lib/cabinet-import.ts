@@ -29,6 +29,8 @@ export interface ImportResult {
     filesCount: number;
     parametersCount: number;
     errors: string[];
+    /** Ak zlyhanie kvôli existujúcej skrinke (konflikt slug), názov ktorý už existuje */
+    conflictExistingName?: string;
 }
 
 /**
@@ -92,17 +94,32 @@ export async function scanCabinetFolder(
 }
 
 /**
+ * Voliteľné parametre pri importe skrinky (default rozmer, kategória, prepísanie názvu)
+ */
+export interface ImportCabinetOptions {
+    defaultWidth?: number | null;
+    defaultHeight?: number | null;
+    defaultDepth?: number | null;
+    categoryId?: string | null;
+    /** Ak zadané, použiť tento názov (a z neho slug) namiesto názvu priečinka */
+    overrideName?: string | null;
+}
+
+/**
  * Importuje skrinku z priečinka do katalógu
  */
 export async function importCabinet(
     sourcePath: string,
-    catalogRoot: string = "./catalog"
+    catalogRoot: string = "./catalog",
+    options?: ImportCabinetOptions
 ): Promise<ImportResult> {
     const errors: string[] = [];
 
     try {
-        // 1. Získaj názov z názvu priečinka
-        const cabinetName = path.basename(sourcePath);
+        // 1. Názov a slug: ak je overrideName, použiť ho; inak názov priečinka
+        const folderName = path.basename(sourcePath);
+        const override = options?.overrideName?.trim();
+        const cabinetName = override ? override : folderName;
         const slug = createSlug(cabinetName);
 
         // 2. Skontroluj či skrinka už existuje
@@ -116,6 +133,7 @@ export async function importCabinet(
                 filesCount: 0,
                 parametersCount: 0,
                 errors: [`Skrinka s názvom "${cabinetName}" už existuje v katalógu.`],
+                conflictExistingName: cabinetName,
             };
         }
 
@@ -218,15 +236,34 @@ export async function importCabinet(
             await fs.writeFile(destPath, content, "utf-8");
         }
 
-        // 8. Ulož do databázy
+        // 8. Rozmery: ak sú v options zadané, prepíš hodnoty z .ganx
+        const finalWidth =
+            options?.defaultWidth != null && options.defaultWidth > 0
+                ? options.defaultWidth
+                : baseWidth;
+        const finalHeight =
+            options?.defaultHeight != null && options.defaultHeight > 0
+                ? options.defaultHeight
+                : baseHeight;
+        const finalDepth =
+            options?.defaultDepth != null && options.defaultDepth > 0
+                ? options.defaultDepth
+                : baseDepth;
+        const categoryId =
+            options?.categoryId != null && options.categoryId !== ""
+                ? options.categoryId
+                : null;
+
+        // 9. Ulož do databázy
         const cabinet = await prisma.cabinet.create({
             data: {
                 name: cabinetName,
                 slug,
                 catalogPath,
-                baseWidth,
-                baseHeight,
-                baseDepth,
+                baseWidth: finalWidth,
+                baseHeight: finalHeight,
+                baseDepth: finalDepth,
+                categoryId,
                 files: {
                     create: ganxFiles.map((filename) => ({
                         filename,
