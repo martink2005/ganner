@@ -6,6 +6,7 @@ import { promises as fs } from "fs";
 import path from "path";
 import prisma from "@/lib/prisma";
 import {
+    applyPolmnInt2Rule,
     extractParameters,
     updateGanxParameters,
     updateGanxPrgrSet,
@@ -313,8 +314,10 @@ export async function recalcJobItem(jobItemId: string) {
                 );
             }
 
+            // 4a. Pravidlo POLMN → <int2> (pred substitúciou, aby sa v PrgrFile našiel {POLMN})
+            const contentAfterPolmn = applyPolmnInt2Rule(content, paramsMap);
             // 4b. Prepíš používateľské parametre z DB (bez per-dielcových)
-            let updatedContent = updateGanxParameters(content, paramsMap);
+            let updatedContent = updateGanxParameters(contentAfterPolmn, paramsMap);
             updatedContent = updateGanxPrgrSet(updatedContent, {
                 wsX,
                 wsY,

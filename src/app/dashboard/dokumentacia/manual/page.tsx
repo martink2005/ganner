@@ -16,7 +16,7 @@ export default function ManualParametrePage() {
                     Manuál – parametre pre programovanie
                 </h1>
                 <p className="mt-1 text-slate-600">
-                    Ako definovať parametre *_C_* a HRUB v .ganx súboroch
+                    Parametre pre rozmery: <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-sm">*_C_*</code>, <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-sm">HRUB</code>; pre počet polic: <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-sm">POLMN</code>.
                 </p>
             </div>
 
@@ -67,6 +67,14 @@ export default function ManualParametrePage() {
                     Typická kombinácia <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-sm">X_C_Y</code> a{" "}
                     <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-sm">Y_C_X</code> – napr. pre bočný dielec:
                     dĺžka v smere X z výšky skrinky, dĺžka v smere Y zo šírky skrinky, hrúbka = HRUB.
+                </p>
+            </section>
+
+            <section className="rounded-lg border bg-white p-6 shadow-sm">
+                <h2 className="text-xl font-semibold text-slate-900">Parameter pre počet polic – POLMN</h2>
+                <p className="mt-2 text-slate-600">
+                    Počet polic sa v .ganx definuje parametrom s názvom <strong>POLMN</strong> (v <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-sm">&lt;ParameterListe&gt;</code> ako <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-sm">ParamName</code> POLMN).
+                    Používateľ ho nastavuje v zákazke pri skrinke. Systém pri generovaní programov podľa hodnoty POLMN nastavuje v operáciách (v tagoch <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-sm">&lt;PrgrFile&gt;</code>, kde je použitý <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-sm">{`{POLMN}`}</code>) hodnotu <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-sm">&lt;int2&gt;</code>: párna hodnota POLMN → 1, neparná → 0 – pre správny prepočet rozostupu vŕtania a podobných operácií.
                 </p>
             </section>
         </div>

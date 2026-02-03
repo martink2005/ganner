@@ -267,6 +267,38 @@ export function updateGanxParameters(
     return updatedXml;
 }
 
+const POLMN_PARAM_NAME = "POLMN";
+
+/**
+ * Určí hodnotu <int2> podľa párnosti POLMN: párna → 1, neparná → 0.
+ * Ak POLMN chýba, je prázdny alebo neplatný, považuje sa za 0 (nepárna → int2 = 0).
+ * Desatinné hodnoty sa zaokrúhľujú (Math.floor) pred určením párnosti.
+ */
+export function applyPolmnInt2Rule(
+    xmlContent: string,
+    parameters: Record<string, string>
+): string {
+    const raw = parameters[POLMN_PARAM_NAME];
+    if (raw === undefined || raw === null) return xmlContent;
+
+    const normalized = String(raw).trim().replace(",", ".");
+    const num = parseFloat(normalized);
+    const invalid = normalized === "" || Number.isNaN(num);
+    const intVal = invalid ? 0 : Math.floor(num);
+    const int2Value = invalid ? 0 : intVal % 2 === 0 ? 1 : 0;
+
+    const prgrFileRegex = /<PrgrFile>([\s\S]*?)<\/PrgrFile>/g;
+    return xmlContent.replace(prgrFileRegex, (block) => {
+        if (!block.includes("{POLMN}")) return block;
+
+        const int2TagRegex = /<int2>[\s\S]*?<\/int2>/;
+        if (int2TagRegex.test(block)) {
+            return block.replace(int2TagRegex, `<int2>${int2Value}</int2>`);
+        }
+        return block.replace("</PrgrFile>", `<int2>${int2Value}</int2>\n  </PrgrFile>`);
+    });
+}
+
 /**
  * Operácia na dielci (napr. vŕtanie)
  */

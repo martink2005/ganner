@@ -157,4 +157,29 @@ Pri implementácii každej úlohy **používaj MCP context7** pre dokumentáciu 
 
 ---
 
+## Feature 13: Generovanie programov – pravidlo POLMN → &lt;int2&gt;
+
+**Cieľ:** Pri generovaní programov (.ganx) pridať pravidlo: pre každý tag `<PrgrFile>` v programe, ak sa v ňom niekde nachádza parameter **POLMN** (v programe v kučeravých zátvorkách `{POLMN}`), tak v tom istom tagu nastaviť `<int2>` podľa hodnoty parametra POLMN z `<ParameterListe>`: ak je hodnota **párna** → `<int2>` = 1, ak je **nepárna** → `<int2>` = 0. Hodnotu `<int2>` upravovať **iba v tom danom tagu** (v danej operácii/dielci). Ak v programe nie je žiadny tag obsahujúci daný parameter, nič neupravovať. Cieľ: správny prepočet pri nastavovaní počtu polic parametrom POLMN.
+
+**Referenčný príklad:** `catalog/a011-konf/BKL_A011.ganx` – ParameterListe obsahuje POLMN, v niektorých `<PrgrFile>` je `{POLMN}` (napr. v `<ColsDistance>{LY}/({POLMN}+1)</ColsDistance>`) a tieto bloky majú `<int2>`.
+
+- [x] **Dokumentácia:** Pre implementáciu používaj MCP context7 (TypeScript, regex/XML spracovanie, Node.js).
+- [x] **ganx-parser – nová funkcia:** V `src/lib/ganx-parser.ts` pridať funkciu `applyPolmnInt2Rule(xmlContent: string, parameters: Record<string, string>): string`. Funkcia: (1) z parametrov získať hodnotu pre kľúč `POLMN`; ak chýba, vrátiť `xmlContent` bez zmeny. (2) Parsovať hodnotu ako celé číslo (odstrániť čiarku/bodku, `parseInt`); párna → `int2Value = 1`, neparná → `int2Value = 0`. (3) Nájsť všetky bloky `<PrgrFile>...</PrgrFile>` (regex alebo sekvenčné prehľadávanie). (4) Pre každý blok: ak vnútro bloku obsahuje reťazec `{POLMN}`, v tom bloku nájsť tag `<int2>...</int2>` a nahradiť obsah za `int2Value`; ak tag `<int2>` v bloku neexistuje, vložiť ho na vhodné miesto (podľa schémy .ganx, napr. pred `</PrgrFile>` alebo medzi existujúce int1/int3). (5) Vrátiť upravený XML.
+- [x] **Poradie volania:** Pravidlo POLMN sa musí aplikovať **pred** substitúciou parametrov (`updateGanxParameters`), aby sa v obsahu `<PrgrFile>` ešte našiel literál `{POLMN}`. V `recalcJobItem` volať: najprv `applyPolmnInt2Rule(content, paramsMap)`, potom `updateGanxParameters`, potom `updateGanxPrgrSet` atď.
+- [x] **job-service – integrácia:** V `src/lib/job-service.ts` importovať `applyPolmnInt2Rule` z `ganx-parser`. V slučke pre každý súbor (dielce) pred riadkom `let updatedContent = updateGanxParameters(...)` pripraviť `content = applyPolmnInt2Rule(content, paramsMap)` (alebo `let updatedContent = applyPolmnInt2Rule(content, paramsMap); updatedContent = updateGanxParameters(updatedContent, paramsMap);`). Zabezpečiť, že `paramsMap` obsahuje POLMN ak je parameter v zákazke definovaný.
+- [x] **Testy:** Pridať unit test(y) v `src/lib/__tests__/` pre `applyPolmnInt2Rule`: (1) XML bez POLMN v ParameterListe → bez zmeny; (2) XML s POLMN=1 (nepárna) a jeden `<PrgrFile>` s `{POLMN}` → v tom bloku `<int2>` = 0; (3) POLMN=2 (párna) → `<int2>` = 1; (4) viacero `<PrgrFile>`, len niektoré obsahujú `{POLMN}` → upraviť len tie bloky. Používať MCP context7 pre Vitest dokumentáciu.
+- [x] **Edge cases:** Ak POLMN nie je celé číslo (desatinné), po zaokrúhlení alebo `Math.floor` určiť párnosť. Ak je prázdny alebo neplatný, považovať za 0 (nepárna → int2 = 0). Dokumentovať v komentári.
+
+---
+
+## Feature 14: Dokumentácia – inštrukcie pre parameter POLMN (počet polic)
+
+**Cieľ:** Do dokumentácie (manuál v aplikácii) pridať krátke inštrukcie, že počet polic sa definuje parametrom **POLMN**.
+
+- [x] **Dokumentácia:** Pre implementáciu používaj MCP context7 (React, Next.js, prípadne Markdown).
+- [x] **Manuál – sekcia POLMN:** Na stránke `src/app/dashboard/dokumentacia/manual/page.tsx` pridať novú sekciu (napr. „Parameter pre počet polic – POLMN“). Text: že počet polic sa v .ganx definuje parametrom s názvom **POLMN** (v `<ParameterListe>` ako `ParamName` POLMN); používateľ ho nastavuje v zákazke pri skrinke; systém pri generovaní programov podľa hodnoty POLMN nastavuje v operáciách (v tagoch `<PrgrFile>`, kde je použitý `{POLMN}`) hodnotu `<int2>` (párna hodnota → 1, neparná → 0) pre správny prepočet. Stačí 1–2 odseky, konzistentné so štýlom existujúcich sekcií (*_C_*, HRUB).
+- [x] **Odkaz z prehľadu:** Voliteľne v úvode manuálu alebo v zozname parametrov spomenúť POLMN („Parametre pre rozmery: *_C_*, HRUB; pre počet polic: POLMN.“).
+
+---
+
 Po dokončení všetkých úloh danej feature zaskrtni príslušný checkbox v `doc/next-poziadavky.md`.
