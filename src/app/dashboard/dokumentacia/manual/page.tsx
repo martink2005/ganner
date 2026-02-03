@@ -46,40 +46,6 @@ export default function ManualParametrePage() {
             </section>
 
             <section className="rounded-lg border bg-white p-6 shadow-sm">
-                <h2 className="text-xl font-semibold text-slate-900">Kde sa definujú</h2>
-                <p className="mt-2 text-slate-600">
-                    V .ganx súbore v blokoch <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-sm">&lt;ParameterListe&gt;</code>.
-                    Každý parameter má položky <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-sm">&lt;ParamName&gt;</code>,{" "}
-                    <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-sm">&lt;ParamValue&gt;</code>,{" "}
-                    <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-sm">&lt;Description&gt;</code> atď.
-                </p>
-                <p className="mt-3 text-sm text-slate-500">Príklad z .ganx:</p>
-                <pre className="mt-2 overflow-x-auto rounded-lg bg-slate-100 p-4 text-sm text-slate-800">
-                    {`  <ParameterListe>
-    <ParamName>X_C_Y</ParamName>
-    <Value>0</Value>
-    <Description>Súradnicový parameter (validácia importu)</Description>
-    <ParamValue>10</ParamValue>
-    <SortID>1040</SortID>
-  </ParameterListe>
-  <ParameterListe>
-    <ParamName>Y_C_X</ParamName>
-    <Value>0</Value>
-    <Description>Súradnicový parameter (validácia importu)</Description>
-    <ParamValue>25</ParamValue>
-    <SortID>1041</SortID>
-  </ParameterListe>
-  <ParameterListe>
-    <ParamName>HRUB</ParamName>
-    <Value>18</Value>
-    <Description>Hrúbka materiálu</Description>
-    <ParamValue>18</ParamValue>
-    <SortID>1042</SortID>
-  </ParameterListe>`}
-                </pre>
-            </section>
-
-            <section className="rounded-lg border bg-white p-6 shadow-sm">
                 <h2 className="text-xl font-semibold text-slate-900">Pravidlá</h2>
                 <ul className="mt-3 list-inside list-disc space-y-2 text-slate-600">
                     <li>
@@ -93,21 +59,6 @@ export default function ManualParametrePage() {
                         jeho hodnota = hrúbka dielca (wsZ).
                     </li>
                 </ul>
-            </section>
-
-            <section className="rounded-lg border bg-white p-6 shadow-sm">
-                <h2 className="text-xl font-semibold text-slate-900">Vzorec</h2>
-                <p className="mt-2 text-slate-600">
-                    Pre každý parameter <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-sm">TARGET_C_BASE</code> platí:
-                </p>
-                <p className="mt-2 font-medium text-slate-800">
-                    rozmer_dielca_po_osi_TARGET = rozmer_skrinky_po_osi_BASE + offset
-                </p>
-                <p className="mt-2 text-slate-600">
-                    (offset = hodnota parametra). Príklad: <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-sm">X_C_Y</code> = 10
-                    → wsX = výška_skrinky + 10; <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-sm">Y_C_X</code> = 25
-                    → wsY = šírka_skrinky + 25.
-                </p>
             </section>
 
             <section className="rounded-lg border bg-white p-6 shadow-sm">
