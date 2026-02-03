@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { deleteJob, updateJob } from "@/lib/job-service";
 
 /**
  * GET /api/jobs/[id] - Detail zákazky
@@ -40,7 +41,7 @@ export async function GET(
 }
 
 /**
- * DELETE /api/jobs/[id] - Vymazanie zákazky (cascade vymaže JobItem a súvisiace záznamy)
+ * DELETE /api/jobs/[id] - Vymazanie zákazky vrátane priečinka (cascade vymaže JobItem)
  */
 export async function DELETE(
     _request: NextRequest,
@@ -48,18 +49,18 @@ export async function DELETE(
 ) {
     try {
         const id = params.id;
-        await prisma.job.delete({
-            where: { id },
-        });
+        await deleteJob(id);
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error("Job DELETE API error:", error);
-        if (
-            error &&
-            typeof error === "object" &&
-            "code" in error &&
-            (error as { code: string }).code === "P2025"
-        ) {
+        const isNotFound =
+            (error &&
+                typeof error === "object" &&
+                "code" in error &&
+                (error as { code: string }).code === "P2025") ||
+            (error instanceof Error &&
+                error.message === "Zákazka neexistuje");
+        if (isNotFound) {
             return NextResponse.json(
                 { error: "Zákazka neexistuje" },
                 { status: 404 }
@@ -107,10 +108,7 @@ export async function PATCH(
         if (name !== undefined) data.name = name.trim();
         if (description !== undefined) data.description = description;
 
-        const job = await prisma.job.update({
-            where: { id },
-            data,
-        });
+        const job = await updateJob(id, data);
         return NextResponse.json({ job });
     } catch (error) {
         console.error("Job PATCH API error:", error);

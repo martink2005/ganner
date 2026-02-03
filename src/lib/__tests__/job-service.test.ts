@@ -30,6 +30,7 @@ vi.mock("fs", async (importOriginal) => {
             access: vi.fn().mockResolvedValue(undefined),
             rm: vi.fn().mockResolvedValue(undefined),
             rename: vi.fn().mockResolvedValue(undefined),
+            unlink: vi.fn().mockResolvedValue(undefined),
         },
     };
 });
@@ -43,6 +44,11 @@ vi.mock("@/lib/ganx-parser", () => ({
     ]),
     updateGanxParameters: vi.fn((content: string) => content),
     updateGanxPrgrSet: vi.fn((content: string) => content),
+}));
+
+// Mock worklist-generator so recalcJobItem doesn't need settings/fs for worklist
+vi.mock("@/lib/worklist-generator", () => ({
+    createWorklistForItem: vi.fn().mockResolvedValue(true),
 }));
 
 describe("Job Service", () => {

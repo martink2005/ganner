@@ -219,3 +219,16 @@ model JobItemParameterValue {
   @@unique([itemId, paramName])
   @@map("job_item_parameter_values")
 }
+
+// =====================================================
+// NASTAVENIA
+// =====================================================
+
+/// Nastavenie aplikácie (key-value)
+model Setting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+
+  @@map("settings")
+}

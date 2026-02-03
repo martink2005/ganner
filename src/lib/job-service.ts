@@ -10,6 +10,7 @@ import {
     updateGanxParameters,
     updateGanxPrgrSet,
 } from "@/lib/ganx-parser";
+import { createWorklistForItem } from "@/lib/worklist-generator";
 
 const JOBS_ROOT = "./zakazky";
 
@@ -32,6 +33,69 @@ export async function createJob(name: string, description?: string) {
             description,
             status: "draft",
         },
+    });
+}
+
+/**
+ * Zmaže zákazku vrátane priečinka na disku (./zakazky/<slug>)
+ */
+export async function deleteJob(jobId: string) {
+    const job = await prisma.job.findUnique({
+        where: { id: jobId },
+    });
+    if (!job) {
+        throw new Error("Zákazka neexistuje");
+    }
+    const jobDir = path.join(JOBS_ROOT, createSlug(job.name));
+    try {
+        await fs.rm(jobDir, { recursive: true, force: true });
+    } catch (err) {
+        if ((err as NodeJS.ErrnoException)?.code !== "ENOENT") {
+            console.error(`Failed to delete job directory ${jobDir}:`, err);
+        }
+        // Pokračujeme zmazaním z DB
+    }
+    await prisma.job.delete({
+        where: { id: jobId },
+    });
+}
+
+/**
+ * Upraví zákazku (názov, popis). Pri zmene názvu premenuje priečinok na disku.
+ */
+export async function updateJob(
+    jobId: string,
+    data: { name?: string; description?: string }
+) {
+    const job = await prisma.job.findUnique({
+        where: { id: jobId },
+    });
+    if (!job) {
+        throw new Error("Zákazka neexistuje");
+    }
+    const updateData: { name?: string; description?: string } = {};
+    if (data.description !== undefined) updateData.description = data.description;
+    if (data.name !== undefined && data.name.trim() !== job.name) {
+        const oldDir = path.join(JOBS_ROOT, createSlug(job.name));
+        const newDir = path.join(JOBS_ROOT, createSlug(data.name.trim()));
+        try {
+            await fs.access(oldDir);
+            await fs.rename(oldDir, newDir);
+        } catch (err) {
+            if ((err as NodeJS.ErrnoException)?.code !== "ENOENT") {
+                console.warn(
+                    `Rename job folder failed: ${oldDir} -> ${newDir}`,
+                    err
+                );
+            }
+        }
+        updateData.name = data.name.trim();
+    } else if (data.name !== undefined) {
+        updateData.name = data.name.trim();
+    }
+    return prisma.job.update({
+        where: { id: jobId },
+        data: updateData,
     });
 }
 
@@ -137,6 +201,7 @@ export async function recalcJobItem(jobItemId: string) {
                     include: { files: true },
                 },
                 parameterValues: true,
+                fileQuantities: true,
             },
         });
 
@@ -285,7 +350,15 @@ export async function recalcJobItem(jobItemId: string) {
             await fs.writeFile(destPath, updatedContent, "utf-8");
         }
 
-        // 5. Update status na generated
+        // 5. Generovanie worklistu (.jblx) pre túto skrinku
+        try {
+            await createWorklistForItem(item as Parameters<typeof createWorklistForItem>[0], itemDir);
+        } catch (worklistErr) {
+            console.error(`Worklist failed for item ${jobItemId}:`, worklistErr);
+            // Nepadáme recalc – status zostane generated
+        }
+
+        // 6. Update status na generated
         await prisma.jobItem.update({
             where: { id: jobItemId },
             data: { outputStatus: "generated" },
@@ -339,21 +412,26 @@ export async function updateJobItem(
         quantityUpdate = q;
     }
 
-    // 1. Riešenie zmeny názvu (premenovanie priečinka)
+    // 1. Riešenie zmeny názvu (premenovanie priečinka a worklistu)
     if (data.name && data.name !== item.name) {
         const jobDir = path.join(JOBS_ROOT, createSlug(item.job.name));
         const oldPath = path.join(jobDir, item.name);
         const newPath = path.join(jobDir, data.name);
 
         try {
-            // Skontrolujeme či starý priečinok existuje
             await fs.access(oldPath);
-            // Premenujeme
             await fs.rename(oldPath, newPath);
         } catch (err) {
-            // Ak startý priečinok neexistuje (napr. ešte nebol vygenerovaný), nevadí.
-            // Ak nastala iná chyba, logneme ju, ale pokračujeme v DB update (recalc vytvorí nový priečinok)
             console.warn(`Rename folder failed or folder not found: ${oldPath} -> ${newPath}`, err);
+        }
+
+        const oldWorklistPath = path.join(jobDir, "worklists", `${item.name}.jblx`);
+        try {
+            await fs.unlink(oldWorklistPath);
+        } catch (err) {
+            if ((err as NodeJS.ErrnoException)?.code !== "ENOENT") {
+                console.warn(`Failed to remove old worklist ${oldWorklistPath}:`, err);
+            }
         }
     }
 
@@ -439,10 +517,20 @@ export async function deleteJobItem(itemId: string) {
         return { success: false, error: "Item not found" }; // Alebo throw, ale pre delete je idempotentnosť OK
     }
 
-    // 1. Zmazanie priečinka
     const jobDir = path.join(JOBS_ROOT, createSlug(item.job.name));
     const itemDir = path.join(jobDir, item.name);
+    const worklistPath = path.join(jobDir, "worklists", `${item.name}.jblx`);
 
+    // 1. Zmazanie worklistu (.jblx) ak existuje
+    try {
+        await fs.unlink(worklistPath);
+    } catch (err) {
+        if ((err as NodeJS.ErrnoException)?.code !== "ENOENT") {
+            console.error(`Failed to delete worklist ${worklistPath}:`, err);
+        }
+    }
+
+    // 2. Zmazanie priečinka skrinky
     try {
         await fs.rm(itemDir, { recursive: true, force: true });
     } catch (err) {
@@ -450,7 +538,7 @@ export async function deleteJobItem(itemId: string) {
         // Pokračujeme zmazaním z DB
     }
 
-    // 2. Zmazanie z DB
+    // 3. Zmazanie z DB
     await prisma.jobItem.delete({
         where: { id: itemId },
     });

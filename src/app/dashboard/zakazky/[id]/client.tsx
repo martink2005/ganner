@@ -54,7 +54,7 @@ export function JobDetailClient({ initialJob }: JobDetailClientProps) {
         if (isGenerating) {
             const timer = setInterval(() => {
                 refreshJob();
-            }, 3000); // Check every 3 seconds
+            }, 1000); // Check every 1 second
 
             return () => clearInterval(timer);
         }
