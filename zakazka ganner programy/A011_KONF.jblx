@@ -1,0 +1,39 @@
+<?xml version="1.0" ?>
+<Joblst xmlns="http://tempuri.org/Joblst.xsd">
+  <JobLstTable>
+    <Name>BKP_A011</Name>
+    <File>C:\\GannoMAT Programs\25017 PREPE-KL\A011_KONF\BKP_A011.ganx</File>
+    <Description>HRANA K DORAZU SPODNA DO PREDU</Description>
+    <Stueck>1</Stueck>
+  </JobLstTable>
+  <JobLstTable>
+    <Name>BKL_A011</Name>
+    <File>C:\\GannoMAT Programs\25017 PREPE-KL\A011_KONF\BKL_A011.ganx</File>
+    <Description>HRANA K DORAZU SPODNA DO PREDU</Description>
+    <Stueck>1</Stueck>
+  </JobLstTable>
+  <JobLstTable>
+    <Name>DNO_A011</Name>
+    <File>C:\\GannoMAT Programs\25017 PREPE-KL\A011_KONF\DNO_A011.ganx</File>
+    <Description>HRANA K DORAZU</Description>
+    <Stueck>1</Stueck>
+  </JobLstTable>
+  <JobLstTable>
+    <Name>STROP_A011</Name>
+    <File>C:\\GannoMAT Programs\25017 PREPE-KL\A011_KONF\STROP_A011.ganx</File>
+    <Description>HRANA K DORAZU</Description>
+    <Stueck>1</Stueck>
+  </JobLstTable>
+  <JobLstTable>
+    <Name>DVL_A011</Name>
+    <File>C:\\GannoMAT Programs\25017 PREPE-KL\A011_KONF\DVL_A011.ganx</File>
+    <Description>HORNA K DORAZU</Description>
+    <Stueck>1</Stueck>
+  </JobLstTable>
+  <JobLstTable>
+    <Name>DVP_A011</Name>
+    <File>C:\\GannoMAT Programs\25017 PREPE-KL\A011_KONF\DVP_A011.ganx</File>
+    <Description>HORNA K DORAZU</Description>
+    <Stueck>1</Stueck>
+  </JobLstTable>
+</Joblst>

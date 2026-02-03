@@ -277,10 +277,34 @@ export async function importCabinet(
 }
 
 /**
- * Získa všetky skrinky z katalógu
+ * Možnosti pre getAllCabinets
  */
-export async function getAllCabinets() {
+export interface GetAllCabinetsOptions {
+    categoryId?: string | null;
+    includeChildren?: boolean;
+}
+
+/**
+ * Získa všetky skrinky z katalógu, voliteľne filtrované podľa kategórie.
+ */
+export async function getAllCabinets(options?: GetAllCabinetsOptions) {
+    const { categoryId, includeChildren } = options ?? {};
+    let where: { categoryId?: string | null | { in: string[] } } = {};
+
+    if (categoryId) {
+        if (includeChildren) {
+            const categories = await prisma.cabinetCategory.findMany();
+            const { getDescendantIds } = await import("@/lib/category-utils");
+            const descendantIds = getDescendantIds(categoryId, categories);
+            const categoryIds = [categoryId, ...descendantIds];
+            where.categoryId = { in: categoryIds };
+        } else {
+            where.categoryId = categoryId;
+        }
+    }
+
     return prisma.cabinet.findMany({
+        where,
         include: {
             category: true,
             _count: {

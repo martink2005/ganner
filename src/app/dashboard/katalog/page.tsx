@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Plus, FileBox, Settings2, Trash2 } from "lucide-react";
+import { Plus, FileBox, Settings2, Trash2, FolderTree } from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -11,6 +11,14 @@ import {
     DialogTitle,
     DialogFooter,
 } from "@/components/ui/dialog";
+
+interface Category {
+    id: string;
+    name: string;
+    slug: string;
+    parentId: string | null;
+    children: Category[];
+}
 
 interface Cabinet {
     id: string;
@@ -20,14 +28,50 @@ interface Cabinet {
     baseHeight: number | null;
     baseDepth: number | null;
     createdAt: string;
+    category?: { id: string; name: string } | null;
     _count: {
         files: number;
         parameters: number;
     };
 }
 
+function flattenCategories(nodes: Category[]): { id: string; label: string }[] {
+    const out: { id: string; label: string }[] = [];
+    function walk(ns: Category[], depth: number) {
+        for (const n of ns) {
+            out.push({ id: n.id, label: "—".repeat(depth) + (depth ? " " : "") + n.name });
+            walk(n.children, depth + 1);
+        }
+    }
+    walk(nodes, 0);
+    return out;
+}
+
+/** Zoskupí skrinky podľa categoryId; null = bez kategórie. */
+function groupCabinetsByCategory(cabinets: Cabinet[]): Map<string | null, Cabinet[]> {
+    const map = new Map<string | null, Cabinet[]>();
+    for (const c of cabinets) {
+        const key = c.category?.id ?? null;
+        if (!map.has(key)) map.set(key, []);
+        map.get(key)!.push(c);
+    }
+    return map;
+}
+
+/** Má kategória skrinky alebo má potomka, ktorý má skrinky? */
+function categoryHasCabinetsOrDescendants(
+    node: Category,
+    groups: Map<string | null, Cabinet[]>
+): boolean {
+    if ((groups.get(node.id)?.length ?? 0) > 0) return true;
+    return node.children.some((child) => categoryHasCabinetsOrDescendants(child, groups));
+}
+
 export default function KatalogPage() {
     const [cabinets, setCabinets] = useState<Cabinet[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [categoryFilter, setCategoryFilter] = useState<string>("");
+    const [includeChildren, setIncludeChildren] = useState(true);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [deleteDialog, setDeleteDialog] = useState<{
@@ -37,13 +81,34 @@ export default function KatalogPage() {
         error: string | null;
     }>({ open: false, cabinet: null, loading: false, error: null });
 
+    const fetchCategories = async () => {
+        try {
+            const res = await fetch("/api/catalog/categories");
+            const data = await res.json();
+            if (res.ok) setCategories(data.categories);
+        } catch {
+            // ignore
+        }
+    };
+
     useEffect(() => {
-        fetchCabinets();
+        fetchCategories();
     }, []);
 
+    useEffect(() => {
+        fetchCabinets();
+    }, [categoryFilter, includeChildren]);
+
     const fetchCabinets = async () => {
+        setLoading(true);
         try {
-            const response = await fetch("/api/catalog");
+            const params = new URLSearchParams();
+            if (categoryFilter) {
+                params.set("categoryId", categoryFilter);
+                if (includeChildren) params.set("includeChildren", "true");
+            }
+            const url = params.toString() ? `/api/catalog?${params}` : "/api/catalog";
+            const response = await fetch(url);
             const data = await response.json();
 
             if (!response.ok) {
@@ -93,19 +158,58 @@ export default function KatalogPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-900">Katalóg</h1>
                     <p className="text-slate-600 mt-1">
                         Správa šablón skriniek a ich parametrov
                     </p>
                 </div>
-                <Link href="/dashboard/katalog/import">
-                    <Button className="gap-2">
-                        <Plus className="h-4 w-4" />
-                        Import skrinky
-                    </Button>
-                </Link>
+                <div className="flex items-center gap-2 flex-wrap">
+                    <Link href="/dashboard/katalog/kategorie">
+                        <Button variant="outline" className="gap-2">
+                            <FolderTree className="h-4 w-4" />
+                            Kategórie
+                        </Button>
+                    </Link>
+                    <Link href="/dashboard/katalog/import">
+                        <Button className="gap-2">
+                            <Plus className="h-4 w-4" />
+                            Import skrinky
+                        </Button>
+                    </Link>
+                </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-4 rounded-lg border bg-white p-4">
+                <div className="flex items-center gap-2">
+                    <label htmlFor="cat-filter" className="text-sm font-medium text-slate-700">
+                        Kategória:
+                    </label>
+                    <select
+                        id="cat-filter"
+                        className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                        value={categoryFilter}
+                        onChange={(e) => setCategoryFilter(e.target.value)}
+                    >
+                        <option value="">Všetky kategórie</option>
+                        {flattenCategories(categories).map((c) => (
+                            <option key={c.id} value={c.id}>
+                                {c.label}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                {categoryFilter ? (
+                    <label className="flex items-center gap-2 text-sm text-slate-600">
+                        <input
+                            type="checkbox"
+                            checked={includeChildren}
+                            onChange={(e) => setIncludeChildren(e.target.checked)}
+                        />
+                        Vrátane podkategórií
+                    </label>
+                ) : null}
             </div>
 
             {loading ? (
@@ -135,55 +239,141 @@ export default function KatalogPage() {
                     </Link>
                 </div>
             ) : (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {cabinets.map((cabinet) => (
-                        <div
-                            key={cabinet.id}
-                            className="group relative rounded-lg border bg-white p-6 shadow-sm transition-all hover:border-blue-300 hover:shadow-md"
-                        >
-                            <Link
-                                href={`/dashboard/katalog/${cabinet.slug}`}
-                                className="block pr-12"
-                            >
-                                <div className="flex items-start justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className="rounded-lg bg-blue-100 p-2 text-blue-600">
-                                            <FileBox className="h-5 w-5" />
-                                        </div>
-                                        <div>
-                                            <h3 className="font-semibold text-slate-900">
-                                                {cabinet.name}
-                                            </h3>
-                                            <p className="text-sm text-slate-500">
-                                                {cabinet._count.files} súborov
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
+                <div className="space-y-8">
+                    {(() => {
+                        const groups = groupCabinetsByCategory(cabinets);
 
-                                <div className="mt-4 flex items-center gap-4 text-sm text-slate-600">
-                                    <div className="flex items-center gap-1">
-                                        <Settings2 className="h-4 w-4" />
-                                        <span>{cabinet._count.parameters} parametrov</span>
-                                    </div>
-                                    {cabinet.baseWidth && cabinet.baseHeight && (
-                                        <span>
-                                            {cabinet.baseWidth} × {cabinet.baseHeight} mm
-                                        </span>
-                                    )}
+                        function renderCabinetCard(cabinet: Cabinet) {
+                            return (
+                                <div
+                                    key={cabinet.id}
+                                    className="group relative rounded-lg border bg-white p-6 shadow-sm transition-all hover:border-blue-300 hover:shadow-md"
+                                >
+                                    <Link
+                                        href={`/dashboard/katalog/${cabinet.slug}`}
+                                        className="block pr-12"
+                                    >
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className="rounded-lg bg-blue-100 p-2 text-blue-600">
+                                                    <FileBox className="h-5 w-5" />
+                                                </div>
+                                                <div>
+                                                    <h3 className="font-semibold text-slate-900">
+                                                        {cabinet.name}
+                                                    </h3>
+                                                    <p className="text-sm text-slate-500">
+                                                        {cabinet._count.files} súborov
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="mt-4 flex items-center gap-4 text-sm text-slate-600">
+                                            <div className="flex items-center gap-1">
+                                                <Settings2 className="h-4 w-4" />
+                                                <span>{cabinet._count.parameters} parametrov</span>
+                                            </div>
+                                            {cabinet.baseWidth && cabinet.baseHeight && (
+                                                <span>
+                                                    {cabinet.baseWidth} × {cabinet.baseHeight} mm
+                                                </span>
+                                            )}
+                                        </div>
+                                    </Link>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="absolute right-2 top-2 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                                        onClick={(e) => handleDeleteClick(e, cabinet)}
+                                        title="Zmazať"
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
                                 </div>
-                            </Link>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="absolute right-2 top-2 text-slate-400 hover:text-red-600 hover:bg-red-50"
-                                onClick={(e) => handleDeleteClick(e, cabinet)}
-                                title="Zmazať"
-                            >
-                                <Trash2 className="h-4 w-4" />
-                            </Button>
-                        </div>
-                    ))}
+                            );
+                        }
+
+                        function renderCategorySection(
+                            node: Category,
+                            nested: boolean
+                        ): React.ReactNode {
+                            const list = groups.get(node.id) ?? [];
+                            const hasChildren = node.children.some((child) =>
+                                categoryHasCabinetsOrDescendants(child, groups)
+                            );
+                            const showSection = list.length > 0 || hasChildren;
+                            if (!showSection) return null;
+
+                            const boxClass = nested
+                                ? "rounded-lg border border-slate-200 bg-white p-4 mt-4 ml-4 shadow-sm"
+                                : "rounded-xl border border-slate-200 bg-slate-50/50 p-6 shadow-sm";
+
+                            return (
+                                <section key={node.id} className={boxClass}>
+                                    <h2
+                                        className={
+                                            nested
+                                                ? "mb-3 flex items-center gap-2 text-base font-semibold text-slate-700"
+                                                : "mb-4 flex items-center gap-2 text-lg font-semibold text-slate-800"
+                                        }
+                                    >
+                                        <FolderTree className="h-4 w-4 text-slate-500" />
+                                        {node.name}
+                                        {list.length > 0 && (
+                                            <span className="ml-2 text-sm font-normal text-slate-500">
+                                                ({list.length}{" "}
+                                                {list.length === 1
+                                                    ? "skrinka"
+                                                    : list.length < 5
+                                                        ? "skrinky"
+                                                        : "skriniek"})
+                                            </span>
+                                        )}
+                                    </h2>
+                                    {list.length > 0 && (
+                                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                            {list.map(renderCabinetCard)}
+                                        </div>
+                                    )}
+                                    {node.children
+                                        .filter((child) =>
+                                            categoryHasCabinetsOrDescendants(child, groups)
+                                        )
+                                        .map((child) => (
+                                            <div key={child.id}>
+                                                {renderCategorySection(child, true)}
+                                            </div>
+                                        ))}
+                                </section>
+                            );
+                        }
+
+                        const uncategorized = groups.get(null) ?? [];
+                        return (
+                            <>
+                                {categories.map((node) => renderCategorySection(node, false))}
+                                {uncategorized.length > 0 && (
+                                    <section className="rounded-xl border border-slate-200 bg-slate-50/50 p-6 shadow-sm">
+                                        <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-slate-800">
+                                            <FolderTree className="h-5 w-5 text-slate-500" />
+                                            Bez kategórie
+                                            <span className="ml-2 text-sm font-normal text-slate-500">
+                                                ({uncategorized.length}{" "}
+                                                {uncategorized.length === 1
+                                                    ? "skrinka"
+                                                    : uncategorized.length < 5
+                                                        ? "skrinky"
+                                                        : "skriniek"})
+                                            </span>
+                                        </h2>
+                                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                            {uncategorized.map(renderCabinetCard)}
+                                        </div>
+                                    </section>
+                                )}
+                            </>
+                        );
+                    })()}
                 </div>
             )}
 

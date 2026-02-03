@@ -1,12 +1,21 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getAllCabinets } from "@/lib/cabinet-import";
 
 /**
- * GET /api/catalog - Zoznam všetkých skriniek v katalógu
+ * GET /api/catalog - Zoznam skriniek v katalógu.
+ * Query: categoryId (voliteľný), includeChildren (boolean, default false).
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
     try {
-        const cabinets = await getAllCabinets();
+        const { searchParams } = new URL(request.url);
+        const categoryId = searchParams.get("categoryId") || undefined;
+        const includeChildren =
+            searchParams.get("includeChildren") === "true";
+
+        const cabinets = await getAllCabinets({
+            categoryId: categoryId || undefined,
+            includeChildren,
+        });
 
         return NextResponse.json({
             cabinets,

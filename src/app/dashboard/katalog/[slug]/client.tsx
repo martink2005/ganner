@@ -79,6 +79,8 @@ interface Cabinet {
     name: string;
     slug: string;
     description?: string | null;
+    categoryId?: string | null;
+    category?: { id: string; name: string } | null;
     catalogPath: string;
     baseWidth: number | null;
     baseHeight: number | null;
@@ -209,6 +211,58 @@ export function CabinetDetailClient({ cabinet }: CabinetDetailClientProps) {
     const descriptionAutosaveRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const descriptionLatestRef = useRef(description);
     descriptionLatestRef.current = description;
+
+    /** Kategória skrinky */
+    const [categoryId, setCategoryId] = useState<string>(
+        cabinet.categoryId ?? cabinet.category?.id ?? ""
+    );
+    const [categoriesTree, setCategoriesTree] = useState<{ id: string; name: string; parentId: string | null; children: unknown[] }[]>([]);
+    const [savingCategory, setSavingCategory] = useState(false);
+    const [categoryError, setCategoryError] = useState<string | null>(null);
+
+    useEffect(() => {
+        fetch("/api/catalog/categories")
+            .then((r) => r.json())
+            .then((data) => (data.categories ? setCategoriesTree(data.categories) : undefined))
+            .catch(() => { });
+    }, []);
+
+    function flattenCategoriesForSelect(
+        nodes: { id: string; name: string; children: unknown[] }[],
+        depth = 0
+    ): { id: string; label: string }[] {
+        const out: { id: string; label: string }[] = [];
+        for (const n of nodes) {
+            out.push({ id: n.id, label: "—".repeat(depth) + (depth ? " " : "") + n.name });
+            out.push(...flattenCategoriesForSelect((n.children as { id: string; name: string; children: unknown[] }[]) ?? [], depth + 1));
+        }
+        return out;
+    }
+
+    const categoryOptions = flattenCategoriesForSelect(categoriesTree);
+
+    const saveCategory = async (newCategoryId: string | null) => {
+        setSavingCategory(true);
+        setCategoryError(null);
+        try {
+            const res = await fetch(`/api/catalog/${cabinet.id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ categoryId: newCategoryId ?? null }),
+            });
+            if (res.ok) {
+                setCategoryId(newCategoryId ?? "");
+            } else {
+                const data = await res.json().catch(() => ({}));
+                setCategoryError(data.error ?? "Nepodarilo sa uložiť kategóriu");
+            }
+        } catch (e) {
+            console.error(e);
+            setCategoryError("Chyba pri ukladaní");
+        } finally {
+            setSavingCategory(false);
+        }
+    };
 
     const groups = cabinet.parameterGroups ?? [];
 
@@ -651,6 +705,44 @@ export function CabinetDetailClient({ cabinet }: CabinetDetailClientProps) {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Kategória skrinky */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Kategória</CardTitle>
+                    <CardDescription>
+                        Priradenie skrinky do kategórie pre prehľad v katalógu a filtrovanie.
+                    </CardDescription>
+                    {categoryError && (
+                        <p className="text-sm text-red-600 mt-1">{categoryError}</p>
+                    )}
+                </CardHeader>
+                <CardContent className="space-y-3">
+                    <div className="flex items-center gap-2">
+                        <select
+                            id="cabinet-category"
+                            className="flex-1 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm min-w-0"
+                            value={categoryId}
+                            onChange={(e) => {
+                                const val = e.target.value || null;
+                                setCategoryId(val ?? "");
+                                saveCategory(val);
+                            }}
+                            disabled={savingCategory}
+                        >
+                            <option value="">Žiadna</option>
+                            {categoryOptions.map((o) => (
+                                <option key={o.id} value={o.id}>
+                                    {o.label}
+                                </option>
+                            ))}
+                        </select>
+                        {savingCategory && (
+                            <span className="text-sm text-slate-500 shrink-0">Ukladám…</span>
+                        )}
+                    </div>
+                </CardContent>
+            </Card>
 
             {/* Popis skrinky */}
             <Card>

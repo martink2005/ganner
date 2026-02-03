@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
 /**
- * PATCH /api/catalog/[id] - Aktualizácia skrinky (napr. popis).
+ * PATCH /api/catalog/[id] - Aktualizácia skrinky (popis, categoryId).
  */
 export async function PATCH(
     request: NextRequest,
@@ -12,25 +12,52 @@ export async function PATCH(
         const id = params.id;
         const body = await request.json();
 
+        const cabinet = await prisma.cabinet.findUnique({
+            where: { id },
+        });
+        if (!cabinet) {
+            return NextResponse.json(
+                { error: "Skrinka neexistuje" },
+                { status: 404 }
+            );
+        }
+
+        const data: { description?: string | null; categoryId?: string | null } =
+            {};
+
         if (body.description !== undefined) {
-            const description =
+            data.description =
                 body.description === null || body.description === ""
                     ? null
                     : String(body.description).trim() || null;
-            const cabinet = await prisma.cabinet.findUnique({
-                where: { id },
-            });
-            if (!cabinet) {
-                return NextResponse.json(
-                    { error: "Skrinka neexistuje" },
-                    { status: 404 }
-                );
+        }
+
+        if (body.categoryId !== undefined) {
+            const categoryId =
+                body.categoryId === null || body.categoryId === ""
+                    ? null
+                    : String(body.categoryId);
+            if (categoryId) {
+                const category = await prisma.cabinetCategory.findUnique({
+                    where: { id: categoryId },
+                });
+                if (!category) {
+                    return NextResponse.json(
+                        { error: "Kategória neexistuje" },
+                        { status: 400 }
+                    );
+                }
             }
+            data.categoryId = categoryId;
+        }
+
+        if (Object.keys(data).length > 0) {
             await prisma.cabinet.update({
                 where: { id },
-                data: { description },
+                data,
             });
         }
+
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error("Catalog PATCH API error:", error);

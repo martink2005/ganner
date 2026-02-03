@@ -11,4 +11,4 @@ Next features for application
 [x] Sfunkcni dashboard aby ukazoval hodnoty, pridaj nanho ze posledne zakazky s tym ze nech tam je rovno preklik ze mi otvori tu danu zakazku
 [x] Do katalogu ked otvorim danu skrinku pridaj moznost zadat mnozstvo ku kazemu dielcu respektive programu, to bude definovat pocet kolko je toho dielca v danej skrinke, pri editovani skrinky v zakazke sa musia dat tieto mnozstva upravit ale ked sa prida skrinka tak default bude hodnota z katalogu
 [x] Pridaj moznost v katalogu pridat popis ku skrinke
-[ ] Pridaj do katalogu kategorizaciu skriniek, to znamena ze skrinky môzu patrit do kategorii, kategorie budu rekurzivne a budu sa dat vytvarat donekonecna, nech tam je aj filtrovanie podla kategorii..., kategorie sa musia dat aj spravovat
+[x] Pridaj do katalogu kategorizaciu skriniek, to znamena ze skrinky môzu patrit do kategorii, kategorie budu rekurzivne a budu sa dat vytvarat donekonecna, nech tam je aj filtrovanie podla kategorii..., kategorie sa musia dat aj spravovat

@@ -110,4 +110,23 @@ Pri implementácii každej úlohy **používaj MCP context7** pre dokumentáciu 
 
 ---
 
+## Feature 10: Kategorizácia skriniek v katalógu
+
+**Cieľ:** Skrinky môžu patriť do kategórií. Kategórie sú rekurzívne (strom – každá kategória môže mať podkategórie donekonečna). V katalógu bude filtrovanie podľa kategórie. Kategórie sa musia dať spravovať (vytvárať, upravovať, mazať).
+
+- [x] **Dokumentácia:** Pre implementáciu používaj MCP context7 (Prisma rekurzívne relácie, Next.js API, React stromové komponenty, filtrovanie).
+- [x] **DB – overenie:** Schéma už obsahuje model `CabinetCategory` (id, name, slug, parentId, parent, children, cabinets) a `Cabinet.categoryId`. Overiť, či existuje migrácia a tabuľka `cabinet_categories`; ak nie, vytvoriť migráciu. Slug pri kategórii musí byť unikátny.
+- [x] **API – strom kategórií:** Pridať `GET /api/catalog/categories` – vrátiť všetky kategórie ako rekurzívny strom (pole koreňových kategórií, každá s `children` naplnenými rekurzívne). Použiť Prisma `findMany` s `where: { parentId: null }` a rekurzívne načítať `children` (alebo jednu query s include `{ children: true }` a zostaviť strom na serveri). Formát vhodný pre frontend (napr. `{ id, name, slug, parentId, children: [...] }`).
+- [x] **API – vytvorenie kategórie:** Pridať `POST /api/catalog/categories` – telo `{ name: string, parentId?: string | null }`. Validácia: názov povinný. Generovať `slug` z názvu (normalizácia, unikátnosť – prípadne pridať číslo ak kolízia). Uložiť do `CabinetCategory`. Vrátiť vytvorenú kategóriu.
+- [x] **API – úprava kategórie:** Pridať `PATCH /api/catalog/categories/[id]` – telo `{ name?: string, parentId?: string | null }`. Pri zmene `name` prepočítať `slug`. Pri zmene `parentId` overiť, že nedochádza k cyklu (presun pod seba sameho alebo pod potomka). Aktualizovať záznam.
+- [x] **API – zmazanie kategórie:** Pridať `DELETE /api/catalog/categories/[id]`. Overiť: ak kategória má `children`, vrátiť 400 s hláškou „Kategória má podkategórie“. Ak má priradené skrinky (`cabinets`), rozhodnúť: buď 400 „Kategória obsahuje skrinky“, alebo odstrániť väzbu (nastaviť skrinkám `categoryId: null`) a potom kategóriu zmazať. Dokumentovať správanie v tasku.
+- [x] **API – katalóg s filtrom:** Rozšíriť `GET /api/catalog` o query parameter `categoryId` (voliteľný). Ak je zadaný, vrátiť len skrinky kde `cabinet.categoryId === categoryId`. Voliteľne parameter `includeChildren` (boolean): ak true, vrátiť aj skrinky z podkategórií (rekurzívne). Upraviť `getAllCabinets` v `cabinet-import.ts` alebo volať Prisma priamo v route s `where: { categoryId }`.
+- [x] **API – priradenie skrinky ku kategórii:** Rozšíriť `PATCH /api/catalog/[id]` o prijatie `categoryId?: string | null`. Ak je poslané, aktualizovať `Cabinet.categoryId` (null = odstrániť kategóriu). Validácia: ak `categoryId` nie je null, overiť že kategória existuje.
+- [x] **Frontend – správa kategórií:** Pridať sekciu alebo stránku pre správu kategórií (napr. `dashboard/katalog/kategorie` alebo podstránka v katalógu). Zobraziť strom kategórií (rekurzívne s odsadením alebo stromová štruktúra). Možnosti: Pridať kategóriu (root alebo pod vybranú – názov, voliteľne rodič), Upraviť názov kategórie, Zmazať kategóriu (s potvrdením). Načítavať strom cez `GET /api/catalog/categories`. Vytvorenie cez `POST`, úprava cez `PATCH`, zmazanie cez `DELETE`. Použiť MCP context7 pre React/Next dokumentáciu.
+- [x] **Frontend – filtrovanie v katalógu:** Na stránke `src/app/dashboard/katalog/page.tsx` pridať ovládanie filtra podľa kategórie: dropdown alebo stromový výber (všetky / kategória 1 / kategória 2 / …). Načítať kategórie cez `GET /api/catalog/categories`. Pri zmene filtra volať `GET /api/catalog?categoryId=...` (prípadne `includeChildren=true`) a aktualizovať zoznam skriniek (`fetchCabinets` s parametrom). Možnosť „Všetky kategórie“ = bez query parametra.
+- [x] **Frontend – priradenie skrinky ku kategórii:** Na stránke detailu skrinky `src/app/dashboard/katalog/[slug]` (client komponent) pridať pole **Kategória**: Select alebo dropdown s plochým zoznamom kategórií (alebo strom) – možnosť „Žiadna“. Zobraziť aktuálnu `cabinet.categoryId` / `cabinet.category`. Pri zmene volať `PATCH /api/catalog/[cabinet.id]` s `{ categoryId: value }` (null pre „Žiadna“). Po úspechu aktualizovať lokálny state.
+- [x] **Frontend – zobrazenie kategórie v katalógu:** V zozname skriniek (karty na `katalog/page.tsx`) voliteľne zobraziť názov kategórie pri každej skrinke (ak má `cabinet.category`), aby bolo jasné, do ktorej kategórie skrinka patrí.
+
+---
+
 Po dokončení všetkých úloh danej feature zaskrtni príslušný checkbox v `doc/next-poziadavky.md`.
